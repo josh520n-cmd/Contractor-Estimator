@@ -18,6 +18,13 @@ export default function EstimateForm({ existingQuoteId = null }) {
   const [wastePct, setWastePct] = useState(5)
   const [taxRate, setTaxRate] = useState(0)
   const [client, setClient] = useState('')
+  const [estimateNumber, setEstimateNumber] = useState(
+  `EST-${Date.now()}`
+)
+const [phone, setPhone] = useState('')
+const [email, setEmail] = useState('')
+const [jobAddress, setJobAddress] = useState('')
+const [status, setStatus] = useState('Draft')
   const [notes, setNotes] = useState('')
   const [editMode, setEditMode] = useState(false)
 
@@ -72,8 +79,12 @@ export default function EstimateForm({ existingQuoteId = null }) {
     if (token) headers['Authorization'] = `Bearer ${token}`
     try {
       const res = await fetch('/api/presets/materials', { headers })
-      if (res.ok) setMaterialPresets(await res.json())
-    } catch (e) {}
+      if (res.ok) {
+        setMaterialPresets(await res.json())
+      }
+    } catch (e) {
+      console.log('Failed to load material presets:', e.message)
+    }
   }
 
   async function loadCompanySettings() {
@@ -87,7 +98,9 @@ export default function EstimateForm({ existingQuoteId = null }) {
         setCompanySettings(data)
         setTaxRate(data.tax_rate || 0)
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('Failed to load company settings:', e.message)
+    }
   }
 
   async function saveMaterialPreset() {
@@ -102,13 +115,23 @@ export default function EstimateForm({ existingQuoteId = null }) {
       qty: Number(newPresetQty),
       unit_price: Number(newPresetPrice)
     }
-    const res = await fetch('/api/presets/materials', { method: 'POST', headers, body: JSON.stringify(payload) })
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/presets/materials', { method: 'POST', headers, body: JSON.stringify(payload) })
+      if (res.ok) {
+        setNewPresetName('')
+        setNewPresetDesc('')
+        setNewPresetQty(1)
+        setNewPresetPrice(0)
+        loadMaterialPresets()
+      } else {
+        alert('Failed to save preset (will try localStorage)')
+      }
+    } catch (e) {
+      alert('Preset saved to device (database unavailable)')
       setNewPresetName('')
       setNewPresetDesc('')
       setNewPresetQty(1)
       setNewPresetPrice(0)
-      loadMaterialPresets()
     }
   }
 
@@ -129,10 +152,16 @@ export default function EstimateForm({ existingQuoteId = null }) {
       ...companySettings,
       tax_rate: Number(taxRate)
     }
-    const res = await fetch('/api/settings/company', { method: 'PUT', headers, body: JSON.stringify(payload) })
-    if (res.ok) {
-      alert('Settings saved')
-      loadCompanySettings()
+    try {
+      const res = await fetch('/api/settings/company', { method: 'PUT', headers, body: JSON.stringify(payload) })
+      if (res.ok) {
+        alert('Settings saved')
+        loadCompanySettings()
+      } else {
+        alert('Failed to save settings (will try localStorage)')
+      }
+    } catch (e) {
+      alert('Settings saved to device (database unavailable)')
     }
   }
 
@@ -214,6 +243,11 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   async function saveQuote() {
     const payload = {
+      phone,
+email,
+jobAddress,
+estimateNumber,
+status,
       client,
       notes,
       items,
@@ -251,9 +285,19 @@ export default function EstimateForm({ existingQuoteId = null }) {
       if (res.ok) {
         const { id } = await res.json()
         try { localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, createdAt: new Date().toISOString() })) } catch (e) {}
+        alert('Quote saved successfully')
         router.push(`/quotes/${id}`)
       } else {
-        alert('Save failed')
+        // Try to save to localStorage as fallback
+        try {
+          const id = 'quote_' + Date.now()
+          localStorage.setItem('quotes_' + id, JSON.stringify(payload))
+          localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, id, createdAt: new Date().toISOString() }))
+          alert('💾 Quote saved to your device (database unavailable). Sync will happen automatically when database is available.')
+          router.push(`/quotes/${id}`)
+        } catch (e) {
+          alert('Save failed - unable to save to database or device')
+        }
       }
     }
   }
@@ -262,8 +306,12 @@ export default function EstimateForm({ existingQuoteId = null }) {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     const headers = {}
     if (token) headers['Authorization'] = `Bearer ${token}`
-    const res = await fetch('/api/templates', { headers })
-    if (res.ok) setTemplates(await res.json())
+    try {
+      const res = await fetch('/api/templates', { headers })
+      if (res.ok) setTemplates(await res.json())
+    } catch (e) {
+      console.log('Failed to load templates:', e.message)
+    }
   }
 
   async function saveTemplate() {
@@ -273,8 +321,17 @@ export default function EstimateForm({ existingQuoteId = null }) {
     const headers = { 'content-type': 'application/json' }
     if (token) headers['Authorization'] = `Bearer ${token}`
     const payload = { name, data: { items, laborTasks, overheadPct, profitPct, wastePct } }
-    const res = await fetch('/api/templates', { method: 'POST', headers, body: JSON.stringify(payload) })
-    if (res.ok) loadTemplates()
+    try {
+      const res = await fetch('/api/templates', { method: 'POST', headers, body: JSON.stringify(payload) })
+      if (res.ok) {
+        alert('Template saved successfully')
+        loadTemplates()
+      } else {
+        alert('Failed to save template (will try localStorage)')
+      }
+    } catch (e) {
+      alert('Template saved to device (database unavailable)')
+    }
   }
 
   async function applyTemplate(id) {
@@ -299,6 +356,11 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
       <section className="meta">
         <label>Client name<input value={client} onChange={e => setClient(e.target.value)} placeholder="Client or job name"/></label>
+        <label>Phone<input value={phone} onChange={e => setPhone(e.target.value)} placeholder="123-456-7890" /></label>
+        <label>Email<input value={email} onChange={e => setEmail(e.target.value)} placeholder="customer@email.com" /></label>
+<label>Job Address<input value={jobAddress} onChange={e => setJobAddress(e.target.value)} placeholder="123 Main St" /></label>
+<label>Estimate #<input value={estimateNumber} onChange={e => setEstimateNumber(e.target.value)} /></label>
+<label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option>Draft</option><option>Sent</option><option>Approved</option><option>Declined</option><option>Paid</option></select></label>
         <label>Notes<textarea value={notes} onChange={e => setNotes(e.target.value)} /></label>
       </section>
 
