@@ -5,16 +5,56 @@ h1{margin-bottom:10px}
 .estimator section{margin:18px 0;padding:12px;border:1px solid #eee;border-radius:6px}
 table{width:100%;border-collapse:collapse}
 table th, table td{padding:6px;border-bottom:1px solid #f0f0f0;text-align:left}
-input, textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:4px}
-.actions{display:flex;gap:8px}
+input, textarea, select{width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:inherit;font-size:inherit}
+button{background:#f5f5f5;border:1px solid #ddd;padding:10px 14px;border-radius:6px;cursor:pointer;font-size:0.95rem}
+button:hover{background:#eee}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
 .primary{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:6px}
-.grand{font-size:1.15rem;margin-top:8px}
+.primary:hover{background:#0a58ca}
+.secondary{background:#f8f9fa;border:1px solid #ddd}
+.secondary:hover{background:#e9ecef}
+.grand{font-size:2.25rem;margin-top:16px;padding:18px 20px;border:3px solid #c00;border-radius:14px;background:#ffecec;color:#800;letter-spacing:0.02em;text-align:center;font-weight:900}
 .printable{max-width:800px;margin:0 auto}
-.print-actions{display:flex;justify-content:flex-end;margin-bottom:12px}
+.print-actions{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .print-table{width:100%;border-collapse:collapse}
 .print-table th,.print-table td{border:1px solid #ddd;padding:6px}
+
+/* Company Settings */
+.company-settings{background:#f9f9f9}
+.company-settings h3{margin-top:0;color:var(--accent)}
+.company-settings > div{display:grid;gap:12px}
+.company-settings label{display:flex;flex-direction:column;gap:4px}
+.company-settings label input,.company-settings label textarea{width:100%}
+.logo-preview{color:#28a745;font-weight:500;padding:8px;background:#f0f8f0;border-radius:4px}
+
+/* Material Presets */
+.material-presets h3{margin-top:0;color:var(--accent)}
+.preset-form{display:grid;grid-template-columns:1fr 1fr 100px 100px auto;gap:8px;margin-bottom:12px;align-items:flex-end}
+.preset-form input{margin:0}
+.preset-form button{margin:0;width:100%}
+.preset-list{display:grid;gap:8px}
+.preset-item{display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px}
+.preset-item button{margin:0;white-space:nowrap}
+
+/* Edit mode notice */
+.edit-notice{background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:4px;margin-bottom:16px;color:#856404;font-weight:500}
+
+/* Print header with logo */
+.print-header{display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;padding-bottom:20px;border-bottom:2px solid #ddd}
+.company-logo{max-width:120px;height:auto;border-radius:4px}
+.company-info{flex:1}
+.company-name{font-size:1.5rem;font-weight:bold;color:var(--accent)}
+.company-address{color:var(--muted);font-size:0.9rem}
+.company-phone{color:var(--muted);font-size:0.9rem}
 
 @media print{
   body{padding:0}
   .print-actions{display:none}
+  button{display:none}
+  .edit-notice{display:none}
+}
+
+@media (max-width:600px){
+  .preset-form{grid-template-columns:1fr;gap:8px}
+  .preset-item{flex-direction:column;align-items:flex-start}
 }

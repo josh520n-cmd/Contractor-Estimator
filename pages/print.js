@@ -14,13 +14,31 @@ export default function Print() {
 
   if (!data) return <main className="container"><p>No quote found. Create an estimate first.</p></main>
 
-  const { client, items, notes, totals, createdAt } = data
+  const { client, items, laborTasks = [], notes, totals, createdAt, companySettings = {}, taxRate = 0 } = data
 
   return (
     <main className="printable">
       <div className="print-actions">
         <button onClick={() => window.print()}>Print / Save PDF</button>
       </div>
+
+      <div className="print-header">
+        {companySettings.logo_data && (
+          <img src={companySettings.logo_data} alt="Logo" className="company-logo" />
+        )}
+        <div className="company-info">
+          {companySettings.company_name && (
+            <div className="company-name">{companySettings.company_name}</div>
+          )}
+          {companySettings.company_address && (
+            <div className="company-address">{companySettings.company_address}</div>
+          )}
+          {companySettings.company_phone && (
+            <div className="company-phone">{companySettings.company_phone}</div>
+          )}
+        </div>
+      </div>
+
       <header>
         <h1>Quote</h1>
         <div>Client: <strong>{client}</strong></div>
@@ -39,6 +57,25 @@ export default function Print() {
         </table>
       </section>
 
+      {laborTasks.length > 0 && (
+        <section>
+          <h2>Labor Tasks</h2>
+          <table className="print-table">
+            <thead><tr><th>Description</th><th>Hours</th><th>Rate</th><th>Line</th></tr></thead>
+            <tbody>
+              {laborTasks.map((task, i) => (
+                <tr key={i}>
+                  <td>{task.desc}</td>
+                  <td>{task.hours}</td>
+                  <td>{formatMoney(task.rate)}</td>
+                  <td>{formatMoney((Number(task.hours)||0)*(Number(task.rate)||0))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       <section>
         <h2>Summary</h2>
         <div>Materials: <strong>{formatMoney(totals.materialTotal)}</strong></div>
@@ -46,6 +83,7 @@ export default function Print() {
         <div>Labor: <strong>{formatMoney(totals.laborTotal)}</strong></div>
         <div>Overhead: <strong>{formatMoney(totals.overheadAmount)}</strong></div>
         <div>Profit: <strong>{formatMoney(totals.profitAmount)}</strong></div>
+        {taxRate > 0 && <div>Tax ({taxRate}%): <strong>{formatMoney(totals.taxAmount)}</strong></div>}
         <div className="grand">Total: <strong>{formatMoney(totals.grandTotal)}</strong></div>
       </section>
 
