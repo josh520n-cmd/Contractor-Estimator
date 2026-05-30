@@ -22,12 +22,13 @@ export default function QuotePage() {
           const localValue = localStorage.getItem('quotes_' + id)
           if (localValue) {
             try {
-              const payload = JSON.parse(localValue)
+              const parsed = JSON.parse(localValue)
+              const payload = parsed.payload || parsed
               setData({
                 id,
-                client: payload.client || '',
-                notes: payload.notes || '',
-                created_at: payload.createdAt || new Date().toISOString(),
+                client: parsed.client || payload.client || '',
+                notes: parsed.notes || payload.notes || '',
+                created_at: parsed.createdAt || parsed.created_at || new Date().toISOString(),
                 payload
               })
               return

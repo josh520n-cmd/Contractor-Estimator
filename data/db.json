@@ -56,6 +56,14 @@
       "notes": "",
       "data": "{\"phone\":\"123-456-7899\",\"email\":\"hippity@gmail.com\",\"jobAddress\":\"123 Mainn\",\"estimateNumber\":\"EST-1780102057719\",\"status\":\"Draft\",\"client\":\"hippity hoppity\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05}}",
       "created_at": "2026-05-30T00:48:33.908Z"
+    },
+    {
+      "id": "5c1f8e78-0066-4f77-82fa-95d455709ba0",
+      "user_id": "cfc85d48-345d-4e58-9026-3f0f8679b2e9",
+      "client": "hippity",
+      "notes": "",
+      "data": "{\"phone\":\"123-456-7899\",\"email\":\"hippity@gmail.com\",\"jobAddress\":\"123 Mainn\",\"estimateNumber\":\"EST-1780102313689\",\"status\":\"Draft\",\"client\":\"hippity\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05}}",
+      "created_at": "2026-05-30T00:52:44.098Z"
     }
   ],
   "templates": [],

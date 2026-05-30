@@ -30,11 +30,12 @@ export default function QuotesListPage() {
       .filter(([key]) => key.startsWith('quotes_'))
       .map(([key, value]) => {
         try {
-          const payload = JSON.parse(value)
+          const parsed = JSON.parse(value)
+          const payload = parsed.payload || parsed
           return {
             id: key.replace(/^quotes_/, ''),
-            client: payload.client || '',
-            created_at: payload.createdAt || new Date().toISOString(),
+            client: parsed.client || payload.client || '',
+            created_at: parsed.createdAt || parsed.created_at || new Date().toISOString(),
             status: payload.status || '',
             total: Number(payload?.totals?.grandTotal || payload?.totals?.total || 0),
             payload
