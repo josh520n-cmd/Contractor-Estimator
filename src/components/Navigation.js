@@ -57,11 +57,13 @@ export default function Navigation() {
               {subscription?.plan === 'pro' && (
                 <span className="nav-badge pro">Pro ✓</span>
               )}
+              <Link href="/quotes" className="nav-link">Quotes</Link>
               <Link href="/account" className="nav-link">Account</Link>
               <button onClick={logout} className="nav-logout">Logout</button>
             </>
           ) : (
             <>
+              <Link href="/quotes" className="nav-link">Quotes</Link>
               <Link href="/login" className="nav-link">Sign In</Link>
               <Link href="/signup" className="nav-signup">Sign Up</Link>
             </>

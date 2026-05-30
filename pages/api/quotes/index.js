@@ -1,15 +1,23 @@
 import { v4 as uuidv4 } from 'uuid'
 import db from '../../../lib/db'
+import storage from '../../../lib/storage'
 const { verifyAuth } = require('../../../lib/auth')
 
 export default function handler(req, res) {
   if (req.method === 'GET') {
+    const auth = verifyAuth(req)
+    const user_id = auth ? auth.sub : null
+
     try {
-      const rows = db.prepare('SELECT id, client, created_at FROM quotes ORDER BY created_at DESC').all()
+      const rows = user_id
+        ? db.prepare('SELECT id, client, created_at FROM quotes WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
+        : db.prepare('SELECT id, client, created_at FROM quotes ORDER BY created_at DESC').all()
       return res.json(rows)
     } catch (e) {
       // Fall back to localStorage
-      const rows = storage.getAllQuotes().map(q => ({ id: q.id, client: q.client, created_at: q.created_at }))
+      const rows = storage.getAllQuotes()
+        .filter(q => !user_id || q.user_id === user_id)
+        .map(q => ({ id: q.id, client: q.client, created_at: q.created_at }))
       return res.json(rows)
     }
   }
