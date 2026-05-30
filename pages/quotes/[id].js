@@ -58,6 +58,28 @@ export default function QuotePage() {
     router.push(`/edit/${id}`)
   }
 
+  function saveQuote() {
+    try {
+      const payloadData = {
+        id,
+        client,
+        phone,
+        email,
+        jobAddress,
+        estimateNumber,
+        status: statusValue,
+        notes,
+        created_at,
+        payload
+      }
+      localStorage.setItem('quotes_' + id, JSON.stringify(payloadData))
+      alert('Quote saved successfully')
+    } catch (err) {
+      console.error('Save failed', err)
+      alert('Unable to save quote locally')
+    }
+  }
+
   if (!data) return <main className="container"><p>Loading...</p></main>
   if (data.error) return <main className="container"><p>{data.error}</p></main>
 
@@ -74,29 +96,32 @@ export default function QuotePage() {
 
   return (
     <main className="printable">
-      <div className="print-actions">
+      <div className="print-actions quote-actions-top">
+        <button onClick={saveQuote} className="primary">Save Quote</button>
         <button onClick={() => window.location.href = `/api/quotes/${id}/pdf`}>Download PDF</button>
         <button onClick={() => window.open(`/api/quotes/${id}/pdf`, '_blank')}>Open PDF</button>
         <button onClick={editQuote} className="secondary">Edit Quote</button>
         <button onClick={duplicateQuote} className="secondary">Duplicate Quote</button>
         <button onClick={() => router.push('/print')}>Preview from local</button>
       </div>
-      <header>
+      <header className="quote-header">
         <h1>Saved Quote</h1>
-        {companySettings.company_name && (
-          <div style={{ marginBottom: '12px' }}>
-            <strong>{companySettings.company_name}</strong>
-            {companySettings.company_address && <div>{companySettings.company_address}</div>}
-            {companySettings.company_phone && <div>{companySettings.company_phone}</div>}
-          </div>
-        )}
-        <div>Client: <strong>{client}</strong></div>
-        {phone && <p>Phone: {phone}</p>}
-        {email && <p>Email: {email}</p>}
-        {jobAddress && <p>Job Address: {jobAddress}</p>}
-        {estimateNumber && <p>Estimate #: {estimateNumber}</p>}
-        {statusValue && <p>Status: {statusValue}</p>}
-        <div>Date: <strong>{new Date(created_at).toLocaleString()}</strong></div>
+        <div className="quote-header-grid">
+          {companySettings.company_name && (
+            <div>
+              <strong>{companySettings.company_name}</strong>
+              {companySettings.company_address && <div>{companySettings.company_address}</div>}
+              {companySettings.company_phone && <div>{companySettings.company_phone}</div>}
+            </div>
+          )}
+          <div>Client: <strong>{client}</strong></div>
+          {phone && <div>Phone: <strong>{phone}</strong></div>}
+          {email && <div className="quote-header-email">Email: <strong>{email}</strong></div>}
+          {jobAddress && <div>Job Address: <strong>{jobAddress}</strong></div>}
+          {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
+          {statusValue && <div>Status: <strong>{statusValue}</strong></div>}
+          <div>Date: <strong>{new Date(created_at).toLocaleString()}</strong></div>
+        </div>
       </header>
 
       <section>
