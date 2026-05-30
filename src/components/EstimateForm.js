@@ -5,6 +5,21 @@ function formatMoney(n) {
   return '$' + Number(n || 0).toFixed(2)
 }
 
+function parseEstimateNumber(value) {
+  if (!value) return null
+  const match = /^est[-.](\d{4,6})$/i.exec(value)
+  return match ? Number(match[1]) : null
+}
+
+function nextEstimateNumberFromValues(values) {
+  let maxNumber = 1000
+  for (const value of values) {
+    const number = parseEstimateNumber(value)
+    if (number != null && number > maxNumber) maxNumber = number
+  }
+  return `Est-${maxNumber + 1}`
+}
+
 export default function EstimateForm({ existingQuoteId = null }) {
   const router = useRouter()
   const [items, setItems] = useState([
@@ -18,13 +33,11 @@ export default function EstimateForm({ existingQuoteId = null }) {
   const [wastePct, setWastePct] = useState(5)
   const [taxRate, setTaxRate] = useState(0)
   const [client, setClient] = useState('')
-  const [estimateNumber, setEstimateNumber] = useState(
-  `EST-${Date.now()}`
-)
-const [phone, setPhone] = useState('')
-const [email, setEmail] = useState('')
-const [jobAddress, setJobAddress] = useState('')
-const [status, setStatus] = useState('Draft')
+  const [estimateNumber, setEstimateNumber] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [jobAddress, setJobAddress] = useState('')
+  const [status, setStatus] = useState('Draft')
   const [notes, setNotes] = useState('')
   const [editMode, setEditMode] = useState(false)
 
@@ -57,6 +70,51 @@ const [status, setStatus] = useState('Draft')
     loadTemplates()
   }, [existingQuoteId, router.isReady])
 
+  useEffect(() => {
+    if (existingQuoteId || !router.isReady) return
+
+    async function loadNextEstimateNumber() {
+      let nextNumber = ''
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const res = await fetch('/api/quotes', { headers })
+        if (res.ok) {
+          const quotes = await res.json()
+          nextNumber = nextEstimateNumberFromValues(quotes.map(q => q.estimateNumber))
+        }
+      } catch (e) {
+        console.warn('Failed to load quote numbers from API:', e.message)
+      }
+
+      if (!nextNumber && typeof window !== 'undefined') {
+        const list = Object.values(localStorage)
+          .filter((value) => {
+            try {
+              return value && JSON.parse(value)
+            } catch {
+              return false
+            }
+          })
+          .map((value) => {
+            try {
+              const parsed = JSON.parse(value)
+              return parsed.estimateNumber || (parsed.payload && parsed.payload.estimateNumber) || ''
+            } catch {
+              return ''
+            }
+          })
+        nextNumber = nextEstimateNumberFromValues(list)
+      }
+
+      if (nextNumber) {
+        setEstimateNumber(nextNumber)
+      }
+    }
+
+    loadNextEstimateNumber()
+  }, [existingQuoteId, router.isReady])
+
   async function loadQuote(id) {
     const res = await fetch(`/api/quotes/${id}`)
     if (!res.ok) return
@@ -64,6 +122,7 @@ const [status, setStatus] = useState('Draft')
     const payload = data.payload || {}
     
     setClient(data.client || '')
+    setEstimateNumber(payload.estimateNumber || data.estimateNumber || '')
     setNotes(data.notes || '')
     setItems(payload.items || [])
     setLaborTasks(payload.laborTasks || [])
