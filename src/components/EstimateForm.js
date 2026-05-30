@@ -284,7 +284,11 @@ status,
       const res = await fetch('/api/quotes', { method: 'POST', headers, body: JSON.stringify(payload) })
       if (res.ok) {
         const { id } = await res.json()
-        try { localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, createdAt: new Date().toISOString() })) } catch (e) {}
+        const createdAt = new Date().toISOString()
+        try {
+          localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, id, createdAt }))
+          localStorage.setItem('quotes_' + id, JSON.stringify({ ...payload, id, createdAt }))
+        } catch (e) {}
         alert('Quote saved successfully')
         router.push(`/quotes/${id}`)
       } else {
