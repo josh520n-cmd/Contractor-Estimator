@@ -16,6 +16,22 @@
       "notes": "",
       "data": "{\"phone\":\"123-456-7899\",\"email\":\"hippityhoppity@gmail.com\",\"jobAddress\":\"123 Mainn\",\"estimateNumber\":\"EST-1780100016302\",\"status\":\"Draft\",\"client\":\"hippity hoppity\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05}}",
       "created_at": "2026-05-30T00:14:26.763Z"
+    },
+    {
+      "id": "362e13ba-5e4b-4e60-8d2f-640f47a7e23f",
+      "user_id": null,
+      "client": "Hippity Hoppity",
+      "notes": "",
+      "data": "{\"phone\":\"123-456-7899\",\"email\":\"hippity@gmail.com\",\"jobAddress\":\"123 Main\",\"estimateNumber\":\"EST-1780100448459\",\"status\":\"Draft\",\"client\":\"Hippity Hoppity\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05}}",
+      "created_at": "2026-05-30T00:21:39.047Z"
+    },
+    {
+      "id": "365b3066-ab54-4dc6-a082-c6e27bd5bffb",
+      "user_id": null,
+      "client": "Hippitty hoppity",
+      "notes": "",
+      "data": "{\"phone\":\"123-456-7899\",\"email\":\"Hippity@gmail.com\",\"jobAddress\":\"123 Mainn\",\"estimateNumber\":\"EST-1780100545024\",\"status\":\"Draft\",\"client\":\"Hippitty hoppity\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05}}",
+      "created_at": "2026-05-30T00:23:30.532Z"
     }
   ],
   "templates": [],
