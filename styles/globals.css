@@ -294,3 +294,19 @@ button {
     grid-template-columns: 1fr !important;
   }
 }
+.quote-summary-panel div {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 12px !important;
+  margin: 10px 0 !important;
+  align-items: center;
+}
+
+.quote-summary-panel strong {
+  text-align: right;
+}
+
+.quote-summary-panel {
+  min-width: 280px;
+  overflow: hidden;
+}
