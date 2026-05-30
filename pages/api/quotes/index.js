@@ -3,6 +3,18 @@ import db from '../../../lib/db'
 import storage from '../../../lib/storage'
 const { verifyAuth } = require('../../../lib/auth')
 
+function serializeRow(row) {
+  const payload = JSON.parse(row.data || '{}')
+  const totals = payload?.totals || {}
+  return {
+    id: row.id,
+    client: row.client,
+    created_at: row.created_at,
+    status: payload?.status || '',
+    total: Number(totals.grandTotal || totals.total || 0)
+  }
+}
+
 export default function handler(req, res) {
   if (req.method === 'GET') {
     const auth = verifyAuth(req)
@@ -10,14 +22,24 @@ export default function handler(req, res) {
 
     try {
       const rows = user_id
-        ? db.prepare('SELECT id, client, created_at FROM quotes WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
-        : db.prepare('SELECT id, client, created_at FROM quotes ORDER BY created_at DESC').all()
-      return res.json(rows)
+        ? db.prepare('SELECT id, client, created_at, data FROM quotes WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
+        : db.prepare('SELECT id, client, created_at, data FROM quotes ORDER BY created_at DESC').all()
+      return res.json(rows.map(serializeRow))
     } catch (e) {
       // Fall back to localStorage
       const rows = storage.getAllQuotes()
         .filter(q => !user_id || q.user_id === user_id)
-        .map(q => ({ id: q.id, client: q.client, created_at: q.created_at }))
+        .map(q => {
+          const payload = JSON.parse(q.data || '{}')
+          const totals = payload?.totals || {}
+          return {
+            id: q.id,
+            client: q.client,
+            created_at: q.created_at,
+            status: payload?.status || '',
+            total: Number(totals.grandTotal || totals.total || 0)
+          }
+        })
       return res.json(rows)
     }
   }
