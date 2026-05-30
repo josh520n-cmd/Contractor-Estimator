@@ -21,12 +21,10 @@ button:hover{background:#eee}
 .print-actions{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .quote-actions-top{justify-content:flex-start}
 .quote-header{margin-bottom:18px}
-.quote-header-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start}
-.quote-header-grid > div{margin:0;word-break:break-word;overflow-wrap:anywhere;}
-@media (min-width:900px){
-  .quote-header-email{grid-column:span 2;}
-  .quote-header-jobaddress{grid-column:1 / -1;}
-}
+.quote-header-grid{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px;align-items:start}
+.quote-header-grid > div{margin:0;word-break:break-word;overflow-wrap:anywhere;min-width:0}
+.quote-header-email{grid-column:span 2}
+.quote-header-jobaddress{grid-column:1 / -1}
 .print-table{width:100%;border-collapse:collapse}
 .print-table th,.print-table td{border:1px solid #ddd;padding:6px}
 
