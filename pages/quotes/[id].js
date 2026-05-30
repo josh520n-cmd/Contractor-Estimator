@@ -10,7 +10,37 @@ export default function QuotePage() {
 
   useEffect(() => {
     if (!id) return
-    fetch(`/api/quotes/${id}`).then(r => r.json()).then(setData).catch(() => {})
+
+    async function loadQuote() {
+      try {
+        const res = await fetch(`/api/quotes/${id}`)
+        if (!res.ok) throw new Error('Quote not found')
+        const json = await res.json()
+        setData(json)
+      } catch (e) {
+        if (typeof window !== 'undefined') {
+          const localValue = localStorage.getItem('quotes_' + id)
+          if (localValue) {
+            try {
+              const payload = JSON.parse(localValue)
+              setData({
+                id,
+                client: payload.client || '',
+                notes: payload.notes || '',
+                created_at: payload.createdAt || new Date().toISOString(),
+                payload
+              })
+              return
+            } catch (err) {
+              console.error('Failed to parse local quote', err)
+            }
+          }
+        }
+        setData({ error: 'Quote not found' })
+      }
+    }
+
+    loadQuote()
   }, [id])
 
   async function duplicateQuote() {
@@ -28,6 +58,7 @@ export default function QuotePage() {
   }
 
   if (!data) return <main className="container"><p>Loading...</p></main>
+  if (data.error) return <main className="container"><p>{data.error}</p></main>
 
   const { client, notes, created_at, payload } = data
   const items = payload.items || []

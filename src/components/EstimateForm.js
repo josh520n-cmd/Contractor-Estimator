@@ -291,8 +291,9 @@ status,
         // Try to save to localStorage as fallback
         try {
           const id = 'quote_' + Date.now()
-          localStorage.setItem('quotes_' + id, JSON.stringify(payload))
-          localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, id, createdAt: new Date().toISOString() }))
+          const createdAt = new Date().toISOString()
+          localStorage.setItem('quotes_' + id, JSON.stringify({ ...payload, id, createdAt }))
+          localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, id, createdAt }))
           alert('💾 Quote saved to your device (database unavailable). Sync will happen automatically when database is available.')
           router.push(`/quotes/${id}`)
         } catch (e) {

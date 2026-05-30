@@ -15,12 +15,38 @@ function formatMoney(value) {
 
 export default function QuotesListPage() {
   const [quotes, setQuotes] = useState(null)
+  const [localQuotes, setLocalQuotes] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
   const [processing, setProcessing] = useState(null)
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const headers = token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' }
+
+  function loadLocalQuotes() {
+    if (typeof window === 'undefined') return
+
+    const local = Object.entries(localStorage)
+      .filter(([key]) => key.startsWith('quotes_'))
+      .map(([key, value]) => {
+        try {
+          const payload = JSON.parse(value)
+          return {
+            id: key.replace(/^quotes_/, ''),
+            client: payload.client || '',
+            created_at: payload.createdAt || new Date().toISOString(),
+            status: payload.status || '',
+            total: Number(payload?.totals?.grandTotal || payload?.totals?.total || 0),
+            payload
+          }
+        } catch (e) {
+          return null
+        }
+      })
+      .filter(Boolean)
+
+    setLocalQuotes(local)
+  }
 
   async function loadQuotes() {
     setError('')
@@ -38,20 +64,27 @@ export default function QuotesListPage() {
 
   useEffect(() => {
     loadQuotes()
+    loadLocalQuotes()
   }, [])
 
   const filteredQuotes = useMemo(() => {
-    if (!quotes) return []
+    const merged = quotes === null
+      ? localQuotes
+      : [
+          ...quotes,
+          ...localQuotes.filter((local) => !quotes.some((quote) => quote.id === local.id))
+        ]
+
     const query = search.trim().toLowerCase()
-    if (!query) return quotes
-    return quotes.filter((quote) => {
+    if (!query) return merged
+    return merged.filter((quote) => {
       const id = quote.id.toLowerCase()
       const client = (quote.client || '').toLowerCase()
       const status = (quote.status || '').toLowerCase()
       const date = formatDate(quote.created_at).toLowerCase()
       return id.includes(query) || client.includes(query) || status.includes(query) || date.includes(query)
     })
-  }, [quotes, search])
+  }, [quotes, localQuotes, search])
 
   async function duplicateQuote(id) {
     setProcessing(id)
