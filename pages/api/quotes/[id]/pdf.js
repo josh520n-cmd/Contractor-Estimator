@@ -36,6 +36,11 @@ export default function handler(req, res) {
   doc.fontSize(18).text('Quote', { align: 'left' })
   doc.moveDown()
   doc.fontSize(12).text(`Client: ${row.client}`)
+  if (payload.phone) doc.text(`Phone: ${payload.phone}`)
+  if (payload.email) doc.text(`Email: ${payload.email}`)
+  if (payload.jobAddress) doc.text(`Job Address: ${payload.jobAddress}`)
+  if (payload.estimateNumber) doc.text(`Estimate #: ${payload.estimateNumber}`)
+  if (payload.status) doc.text(`Status: ${payload.status}`)
   doc.text(`Date: ${new Date(row.created_at).toLocaleString()}`)
   doc.moveDown()
 

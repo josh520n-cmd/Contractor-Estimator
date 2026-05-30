@@ -14,7 +14,21 @@ export default function Print() {
 
   if (!data) return <main className="container"><p>No quote found. Create an estimate first.</p></main>
 
-  const { client, items, laborTasks = [], notes, totals, createdAt, companySettings = {}, taxRate = 0 } = data
+  const {
+    client,
+    phone,
+    email,
+    jobAddress,
+    estimateNumber,
+    status,
+    items,
+    laborTasks = [],
+    notes,
+    totals,
+    createdAt,
+    companySettings = {},
+    taxRate = 0
+  } = data
 
   return (
     <main className="printable">
@@ -42,6 +56,11 @@ export default function Print() {
       <header>
         <h1>Quote</h1>
         <div>Client: <strong>{client}</strong></div>
+        {phone && <div>Phone: <strong>{phone}</strong></div>}
+        {email && <div>Email: <strong>{email}</strong></div>}
+        {jobAddress && <div>Job Address: <strong>{jobAddress}</strong></div>}
+        {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
+        {status && <div>Status: <strong>{status}</strong></div>}
         <div>Date: <strong>{new Date(createdAt).toLocaleString()}</strong></div>
       </header>
 
