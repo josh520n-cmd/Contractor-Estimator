@@ -335,3 +335,24 @@ button {
   padding-top: 12px !important;
   border-top: 2px solid #d1d5db !important;
 }
+.summary-controls {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  margin-top: 18px !important;
+  padding-top: 16px !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+.summary-controls label {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-weight: 600 !important;
+}
+
+.summary-controls input {
+  width: 90px !important;
+  padding: 8px 10px !important;
+}

@@ -504,6 +504,39 @@ status,
               <div><span className="summary-label">Profit</span><strong>{formatMoney(profitAmount)}</strong></div>
               {taxRate > 0 && <div><span className="summary-label">Tax</span><strong>{formatMoney(taxAmount)}</strong></div>}
               <div className="summary-total"><span>Total</span><strong>{formatMoney(grandTotal)}</strong></div>
+              <div className="summary-total">
+  <span>Total</span>
+  <strong>{formatMoney(grandTotal)}</strong>
+</div>
+
+<div className="summary-controls">
+  <label>
+    Waste %
+    <input
+      type="number"
+      value={wastePct}
+      onChange={(e) => setWastePct(e.target.value)}
+    />
+  </label>
+
+  <label>
+    Overhead %
+    <input
+      type="number"
+      value={overheadPct}
+      onChange={(e) => setOverheadPct(e.target.value)}
+    />
+  </label>
+
+  <label>
+    Profit %
+    <input
+      type="number"
+      value={profitPct}
+      onChange={(e) => setProfitPct(e.target.value)}
+    />
+  </label>
+</div>
             </div>
           </section>
 
