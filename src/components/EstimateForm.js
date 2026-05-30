@@ -506,7 +506,6 @@ status,
               <div className="summary-total"><span>Total</span><strong>{formatMoney(grandTotal)}</strong></div>
               <div className="summary-total">
   <span>Total</span>
-  <strong>{formatMoney(grandTotal)}</strong>
 </div>
 
 <div className="summary-controls">
