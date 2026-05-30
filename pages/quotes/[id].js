@@ -61,10 +61,16 @@ export default function QuotePage() {
   if (!data) return <main className="container"><p>Loading...</p></main>
   if (data.error) return <main className="container"><p>{data.error}</p></main>
 
-  const { client, notes, created_at, payload } = data
+  const { client, notes, created_at, payload = {} } = data
   const items = payload.items || []
   const laborTasks = payload.laborTasks || []
   const totals = payload.totals || {}
+  const phone = data.phone || payload.phone || ''
+  const email = data.email || payload.email || ''
+  const jobAddress = data.jobAddress || payload.jobAddress || ''
+  const estimateNumber = data.estimateNumber || payload.estimateNumber || ''
+  const statusValue = data.status || payload.status || ''
+  const companySettings = payload.companySettings || {}
 
   return (
     <main className="printable">
@@ -77,12 +83,19 @@ export default function QuotePage() {
       </div>
       <header>
         <h1>Saved Quote</h1>
+        {companySettings.company_name && (
+          <div style={{ marginBottom: '12px' }}>
+            <strong>{companySettings.company_name}</strong>
+            {companySettings.company_address && <div>{companySettings.company_address}</div>}
+            {companySettings.company_phone && <div>{companySettings.company_phone}</div>}
+          </div>
+        )}
         <div>Client: <strong>{client}</strong></div>
-        <p>Phone: {payload?.phone}</p>
-<p>Email: {payload?.email}</p>
-<p>Job Address: {payload?.jobAddress}</p>
-<p>Estimate #: {payload?.estimateNumber}</p>
-<p>Status: {payload?.status}</p>
+        {phone && <p>Phone: {phone}</p>}
+        {email && <p>Email: {email}</p>}
+        {jobAddress && <p>Job Address: {jobAddress}</p>}
+        {estimateNumber && <p>Estimate #: {estimateNumber}</p>}
+        {statusValue && <p>Status: {statusValue}</p>}
         <div>Date: <strong>{new Date(created_at).toLocaleString()}</strong></div>
       </header>
 
