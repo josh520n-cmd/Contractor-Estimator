@@ -4,12 +4,22 @@ const { verifyAuth } = require('../../../lib/auth')
 
 export default function handler(req, res) {
   if (req.method === 'GET') {
-    const auth = verifyAuth(req)
-    const user_id = auth ? auth.sub : null
-    const rows = user_id
-      ? db.prepare('SELECT id, name, created_at FROM templates WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
-      : db.prepare('SELECT id, name, created_at FROM templates ORDER BY created_at DESC').all()
-    return res.json(rows)
+    try {
+      const auth = verifyAuth(req)
+      const user_id = auth ? auth.sub : null
+      const rows = user_id
+        ? db.prepare('SELECT id, name, created_at FROM templates WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
+        : db.prepare('SELECT id, name, created_at FROM templates ORDER BY created_at DESC').all()
+      return res.json(rows)
+    } catch (e) {
+      // Fall back to localStorage
+      const storage = require('../../../lib/storage')
+      const auth = verifyAuth(req)
+      const user_id = auth ? auth.sub : null
+      const templates = user_id ? storage.getUserTemplates(user_id) : storage.getAllTemplates()
+      const rows = templates.map(t => ({ id: t.id, name: t.name, created_at: t.created_at }))
+      return res.json(rows)
+    }
   }
 
   if (req.method === 'POST') {
@@ -20,8 +30,15 @@ export default function handler(req, res) {
     const user_id = auth ? auth.sub : null
     const name = payload.name || 'Template'
     const data = JSON.stringify(payload.data || {})
-    db.prepare('INSERT INTO templates (id,user_id,name,data,created_at) VALUES (?,?,?,?,?)').run(id, user_id, name, data, now)
-    return res.status(201).json({ id })
+    try {
+      db.prepare('INSERT INTO templates (id,user_id,name,data,created_at) VALUES (?,?,?,?,?)').run(id, user_id, name, data, now)
+      return res.status(201).json({ id })
+    } catch (e) {
+      // Fall back to localStorage
+      const storage = require('../../../lib/storage')
+      storage.createTemplate(id, user_id, name, data, now)
+      return res.status(201).json({ id })
+    }
   }
 
   res.status(405).end()

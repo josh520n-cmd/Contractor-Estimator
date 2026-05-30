@@ -4,8 +4,14 @@ const { verifyAuth } = require('../../../lib/auth')
 
 export default function handler(req, res) {
   if (req.method === 'GET') {
-    const rows = db.prepare('SELECT id, client, created_at FROM quotes ORDER BY created_at DESC').all()
-    return res.json(rows)
+    try {
+      const rows = db.prepare('SELECT id, client, created_at FROM quotes ORDER BY created_at DESC').all()
+      return res.json(rows)
+    } catch (e) {
+      // Fall back to localStorage
+      const rows = storage.getAllQuotes().map(q => ({ id: q.id, client: q.client, created_at: q.created_at }))
+      return res.json(rows)
+    }
   }
 
   if (req.method === 'POST') {
@@ -17,8 +23,14 @@ export default function handler(req, res) {
     const client = payload.client || ''
     const notes = payload.notes || ''
     const data = JSON.stringify(payload)
-    db.prepare('INSERT INTO quotes (id,user_id,client,notes,data,created_at) VALUES (?,?,?,?,?,?)').run(id, user_id, client, notes, data, now)
-    return res.status(201).json({ id })
+    try {
+      db.prepare('INSERT INTO quotes (id,user_id,client,notes,data,created_at) VALUES (?,?,?,?,?,?)').run(id, user_id, client, notes, data, now)
+      return res.status(201).json({ id })
+    } catch (e) {
+      // Fall back to localStorage
+      storage.createQuote(id, user_id, client, notes, data, now)
+      return res.status(201).json({ id })
+    }
   }
 
   res.status(405).end()

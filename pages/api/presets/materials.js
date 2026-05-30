@@ -4,14 +4,23 @@ const { verifyAuth } = require('../../../lib/auth')
 
 export default function handler(req, res) {
   if (req.method === 'GET') {
-    const auth = verifyAuth(req)
-    const user_id = auth ? auth.sub : null
-    
-    const rows = user_id
-      ? db.prepare('SELECT id, name, description, qty, unit_price, created_at FROM material_presets WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
-      : db.prepare('SELECT id, name, description, qty, unit_price, created_at FROM material_presets ORDER BY created_at DESC').all()
-    
-    return res.json(rows || [])
+    try {
+      const auth = verifyAuth(req)
+      const user_id = auth ? auth.sub : null
+      
+      const rows = user_id
+        ? db.prepare('SELECT id, name, description, qty, unit_price, created_at FROM material_presets WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
+        : db.prepare('SELECT id, name, description, qty, unit_price, created_at FROM material_presets ORDER BY created_at DESC').all()
+      
+      return res.json(rows || [])
+    } catch (e) {
+      // Fall back to localStorage
+      const storage = require('../../../lib/storage')
+      const auth = verifyAuth(req)
+      const user_id = auth ? auth.sub : null
+      const presets = user_id ? storage.getUserMaterialPresets(user_id) : storage.getAllMaterialPresets()
+      return res.json(presets || [])
+    }
   }
 
   if (req.method === 'POST') {
@@ -25,8 +34,15 @@ export default function handler(req, res) {
     const qty = payload.qty || 0
     const unit_price = payload.unit_price || 0
 
-    db.prepare('INSERT INTO material_presets (id,user_id,name,description,qty,unit_price,created_at) VALUES (?,?,?,?,?,?,?)').run(id, user_id, name, description, qty, unit_price, now)
-    return res.status(201).json({ id })
+    try {
+      db.prepare('INSERT INTO material_presets (id,user_id,name,description,qty,unit_price,created_at) VALUES (?,?,?,?,?,?,?)').run(id, user_id, name, description, qty, unit_price, now)
+      return res.status(201).json({ id })
+    } catch (e) {
+      // Fall back to localStorage
+      const storage = require('../../../lib/storage')
+      storage.createMaterialPreset(id, user_id, name, description, qty, unit_price, now)
+      return res.status(201).json({ id })
+    }
   }
 
   res.status(405).end()

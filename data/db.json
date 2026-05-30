@@ -1,0 +1,17 @@
+{
+  "users": [],
+  "quotes": [
+    {
+      "id": "6e929722-8e1a-4908-b281-fce49cdbfc5f",
+      "user_id": null,
+      "client": "",
+      "notes": "",
+      "data": "{\"phone\":\"\",\"email\":\"\",\"jobAddress\":\"\",\"estimateNumber\":\"EST-1780098962564\",\"status\":\"Draft\",\"client\":\"\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05}}",
+      "created_at": "2026-05-29T23:56:12.280Z"
+    }
+  ],
+  "templates": [],
+  "material_presets": [],
+  "company_settings": [],
+  "subscriptions": []
+}

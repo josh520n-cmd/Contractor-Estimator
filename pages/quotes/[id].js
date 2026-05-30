@@ -46,6 +46,11 @@ export default function QuotePage() {
       <header>
         <h1>Saved Quote</h1>
         <div>Client: <strong>{client}</strong></div>
+        <p>Phone: {payload?.phone}</p>
+<p>Email: {payload?.email}</p>
+<p>Job Address: {payload?.jobAddress}</p>
+<p>Estimate #: {payload?.estimateNumber}</p>
+<p>Status: {payload?.status}</p>
         <div>Date: <strong>{new Date(created_at).toLocaleString()}</strong></div>
       </header>
 
