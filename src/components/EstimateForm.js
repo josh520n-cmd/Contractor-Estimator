@@ -503,9 +503,9 @@ status,
               <div><span className="summary-label">Overhead</span><strong>{formatMoney(overheadAmount)}</strong></div>
               <div><span className="summary-label">Profit</span><strong>{formatMoney(profitAmount)}</strong></div>
               {taxRate > 0 && <div><span className="summary-label">Tax</span><strong>{formatMoney(taxAmount)}</strong></div>}
-              <div className="summary-total"><span>Total</span><strong>{formatMoney(grandTotal)}</strong></div>
               <div className="summary-total">
   <span>Total</span>
+  <strong>{formatMoney(grandTotal)}</strong>
 </div>
 
 <div className="summary-controls">
