@@ -95,7 +95,7 @@ export default function QuotePage() {
   const companySettings = payload.companySettings || {}
 
   return (
-    <main className="printable">
+    <main className="printable quote-detail-page">
       <div className="print-actions quote-actions-top">
         <button onClick={saveQuote} className="primary">Save Quote</button>
         <button onClick={() => window.location.href = `/api/quotes/${id}/pdf`}>Download PDF</button>
@@ -124,7 +124,7 @@ export default function QuotePage() {
         </div>
       </header>
 
-      <section>
+      <section className="section-panel">
         <h2>Items</h2>
         <table className="print-table">
           <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Line</th></tr></thead>
@@ -137,7 +137,7 @@ export default function QuotePage() {
       </section>
 
       {laborTasks.length > 0 && (
-        <section>
+        <section className="section-panel">
           <h2>Labor Tasks</h2>
           <table className="print-table">
             <thead><tr><th>Description</th><th>Hours</th><th>Rate</th><th>Line</th></tr></thead>
@@ -155,7 +155,7 @@ export default function QuotePage() {
         </section>
       )}
 
-      <section>
+      <section className="section-panel quote-summary-panel">
         <h2>Summary</h2>
         <div>Materials: <strong>{formatMoney(totals.materialTotal)}</strong></div>
         <div>Waste buffer: <strong>{formatMoney(totals.wasteAmount)}</strong></div>
@@ -167,7 +167,7 @@ export default function QuotePage() {
       </section>
 
       {notes && (
-        <section>
+        <section className="section-panel">
           <h2>Notes</h2>
           <p>{notes}</p>
         </section>

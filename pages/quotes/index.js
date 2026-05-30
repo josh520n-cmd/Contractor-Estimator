@@ -145,8 +145,8 @@ export default function QuotesListPage() {
   }
 
   return (
-    <main className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
+    <main className="container quotes-page">
+      <div className="page-header">
         <div>
           <h1>Your Quotes</h1>
           <p>Review saved estimates and open them for editing or download.</p>
@@ -156,13 +156,13 @@ export default function QuotesListPage() {
         </Link>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '18px' }}>
+      <div className="search-panel">
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by client, quote id, status, or date"
-          style={{ flex: '1 1 320px', minWidth: 240, padding: '10px 12px', borderRadius: 6, border: '1px solid #ddd' }}
+          className="search-input"
         />
       </div>
 
@@ -182,7 +182,7 @@ export default function QuotesListPage() {
           )}
         </section>
       ) : (
-        <table>
+        <table className="quote-list-table">
           <thead>
             <tr>
               <th>Quote</th>
@@ -198,7 +198,7 @@ export default function QuotesListPage() {
               const isProcessing = processing === quote.id
               const isArchived = quote.status === 'archived'
               return (
-                <tr key={quote.id} style={isArchived ? { opacity: 0.6 } : undefined}>
+                <tr key={quote.id} className={isArchived ? 'archived-row' : ''}>
                   <td>
                     <Link href={`/quotes/${quote.id}`}>
                       {quote.id.slice(0, 8)}
@@ -208,8 +208,8 @@ export default function QuotesListPage() {
                   <td>{quote.status || 'Unknown'}</td>
                   <td>{formatMoney(quote.total)}</td>
                   <td>{formatDate(quote.created_at)}</td>
-                  <td style={{ display: 'grid', gap: '6px' }}>
-                    <Link href={`/quotes/${quote.id}`} className="secondary" style={{ display: 'inline-block' }}>
+                  <td className="table-actions">
+                    <Link href={`/quotes/${quote.id}`} className="secondary">
                       Open
                     </Link>
                     <button onClick={() => duplicateQuote(quote.id)} disabled={isProcessing} className="secondary">
