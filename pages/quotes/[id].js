@@ -117,7 +117,7 @@ export default function QuotePage() {
           <div>Client: <strong>{client}</strong></div>
           {phone && <div>Phone: <strong>{phone}</strong></div>}
           {email && <div className="quote-header-email">Email: <strong>{email}</strong></div>}
-          {jobAddress && <div>Job Address: <strong>{jobAddress}</strong></div>}
+          {jobAddress && <div className="quote-header-jobaddress">Job Address: <strong>{jobAddress}</strong></div>}
           {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
           {statusValue && <div>Status: <strong>{statusValue}</strong></div>}
           <div>Date: <strong>{new Date(created_at).toLocaleString()}</strong></div>
