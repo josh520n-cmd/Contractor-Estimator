@@ -415,137 +415,170 @@ status,
   }
 
   return (
-    <div className="estimator">
+    <div className="estimate-builder">
       {editMode && <div className="edit-notice">📝 Editing existing quote</div>}
 
-      <section className="meta">
-        <label>Client name<input value={client} onChange={e => setClient(e.target.value)} placeholder="Client or job name"/></label>
-        <label>Phone<input value={phone} onChange={e => setPhone(e.target.value)} placeholder="123-456-7890" /></label>
-        <label>Email<input value={email} onChange={e => setEmail(e.target.value)} placeholder="customer@email.com" /></label>
-<label>Job Address<input value={jobAddress} onChange={e => setJobAddress(e.target.value)} placeholder="123 Main St" /></label>
-<label>Estimate #<input value={estimateNumber} onChange={e => setEstimateNumber(e.target.value)} /></label>
-<label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option>Draft</option><option>Sent</option><option>Approved</option><option>Declined</option><option>Paid</option></select></label>
-        <label>Notes<textarea value={notes} onChange={e => setNotes(e.target.value)} /></label>
-      </section>
-
-      <section className="company-settings">
-        <h3>Company Settings</h3>
-        <div>
-          <label>Company Name
-            <input value={companySettings.company_name} onChange={e => setCompanySettings({ ...companySettings, company_name: e.target.value })} />
-          </label>
-          <label>Address
-            <input value={companySettings.company_address} onChange={e => setCompanySettings({ ...companySettings, company_address: e.target.value })} />
-          </label>
-          <label>Phone
-            <input value={companySettings.company_phone} onChange={e => setCompanySettings({ ...companySettings, company_phone: e.target.value })} />
-          </label>
-          <label>Tax Rate (%)
-            <input type="number" step="0.1" value={taxRate} onChange={e => setTaxRate(e.target.value)} />
-          </label>
-          <label>Company Logo
-            <input type="file" accept="image/*" onChange={handleLogoUpload} />
-          </label>
-          {companySettings.logo_data && <div className="logo-preview">✓ Logo uploaded</div>}
-          <button onClick={saveCompanySettings}>Save Settings</button>
-        </div>
-      </section>
-
-      <section className="material-presets">
-        <h3>Material Presets</h3>
-        <div className="preset-form">
-          <input placeholder="Preset name" value={newPresetName} onChange={e => setNewPresetName(e.target.value)} />
-          <input placeholder="Description" value={newPresetDesc} onChange={e => setNewPresetDesc(e.target.value)} />
-          <input type="number" placeholder="Qty" value={newPresetQty} onChange={e => setNewPresetQty(e.target.value)} />
-          <input type="number" placeholder="Unit price" value={newPresetPrice} onChange={e => setNewPresetPrice(e.target.value)} />
-          <button onClick={saveMaterialPreset}>Add Preset</button>
-        </div>
-        {materialPresets.length > 0 && (
-          <div className="preset-list">
-            {materialPresets.map(p => (
-              <div key={p.id} className="preset-item">
-                <span>{p.name} - {p.qty} x ${Number(p.unit_price).toFixed(2)}</span>
-                <button onClick={() => addPresetToItems(p)}>+ Add to items</button>
-              </div>
-            ))}
+      <section className="card client-card">
+        <div className="card-header">
+          <div>
+            <p className="eyebrow">Client Information</p>
+            <h2>Estimate details</h2>
           </div>
-        )}
+          <div className="estimate-meta">
+            <span className="tag estimate-tag">{estimateNumber || 'Draft #'}</span>
+            <span className="tag status-tag">{status}</span>
+          </div>
+        </div>
+
+        <div className="field-grid">
+          <label>Client name<input value={client} onChange={e => setClient(e.target.value)} placeholder="Client or job name"/></label>
+          <label>Phone<input value={phone} onChange={e => setPhone(e.target.value)} placeholder="123-456-7890" /></label>
+          <label>Email<input value={email} onChange={e => setEmail(e.target.value)} placeholder="customer@email.com" /></label>
+          <label>Job Address<input value={jobAddress} onChange={e => setJobAddress(e.target.value)} placeholder="123 Main St" /></label>
+          <label>Estimate #<input value={estimateNumber} onChange={e => setEstimateNumber(e.target.value)} /></label>
+          <label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option>Draft</option><option>Sent</option><option>Approved</option><option>Declined</option><option>Paid</option></select></label>
+        </div>
+
+        <label className="notes-block">Notes<textarea value={notes} onChange={e => setNotes(e.target.value)} /></label>
       </section>
 
-      <section className="items">
-        <h2>Materials</h2>
-        <table>
-          <thead>
-            <tr><th>Description</th><th>Qty</th><th>Unit</th><th>Line</th><th></th></tr>
-          </thead>
-          <tbody>
-            {items.map((it, i) => (
-              <tr key={i}>
-                <td><input value={it.desc} onChange={e => setItem(i, 'desc', e.target.value)} /></td>
-                <td><input type="number" value={it.qty} onChange={e => setItem(i, 'qty', e.target.value)} /></td>
-                <td><input type="number" value={it.unit} onChange={e => setItem(i, 'unit', e.target.value)} /></td>
-                <td>{formatMoney((Number(it.qty)||0)*(Number(it.unit)||0))}</td>
-                <td><button onClick={() => removeItem(i)}>Remove</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <button onClick={addItem}>Add material</button>
-      </section>
+      <div className="builder-grid">
+        <div className="main-content">
+          <section className="card section-panel">
+            <div className="section-header">
+              <h2>Materials</h2>
+              <button type="button" className="ghost-button" onClick={addItem}>Add material</button>
+            </div>
+            <table className="data-table">
+              <thead>
+                <tr><th>Description</th><th>Qty</th><th>Unit</th><th>Line</th><th></th></tr>
+              </thead>
+              <tbody>
+                {items.map((it, i) => (
+                  <tr key={i}>
+                    <td><input value={it.desc} onChange={e => setItem(i, 'desc', e.target.value)} /></td>
+                    <td><input type="number" value={it.qty} onChange={e => setItem(i, 'qty', e.target.value)} /></td>
+                    <td><input type="number" value={it.unit} onChange={e => setItem(i, 'unit', e.target.value)} /></td>
+                    <td>{formatMoney((Number(it.qty)||0)*(Number(it.unit)||0))}</td>
+                    <td><button type="button" className="secondary" onClick={() => removeItem(i)}>Remove</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
 
-      <section className="labor">
-        <h2>Labor Tasks</h2>
-        <table>
-          <thead>
-            <tr><th>Description</th><th>Hours</th><th>Rate</th><th>Line</th><th></th></tr>
-          </thead>
-          <tbody>
-            {laborTasks.map((task, i) => (
-              <tr key={i}>
-                <td><input value={task.desc} onChange={e => setLaborTask(i, 'desc', e.target.value)} /></td>
-                <td><input type="number" value={task.hours} onChange={e => setLaborTask(i, 'hours', e.target.value)} /></td>
-                <td><input type="number" value={task.rate} onChange={e => setLaborTask(i, 'rate', e.target.value)} /></td>
-                <td>{formatMoney((Number(task.hours)||0)*(Number(task.rate)||0))}</td>
-                <td><button onClick={() => removeLaborTask(i)}>Remove</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <button onClick={addLaborTask}>Add labor task</button>
-      </section>
+          <section className="card section-panel">
+            <div className="section-header">
+              <h2>Labor Tasks</h2>
+              <button type="button" className="ghost-button" onClick={addLaborTask}>Add labor task</button>
+            </div>
+            <table className="data-table">
+              <thead>
+                <tr><th>Description</th><th>Hours</th><th>Rate</th><th>Line</th><th></th></tr>
+              </thead>
+              <tbody>
+                {laborTasks.map((task, i) => (
+                  <tr key={i}>
+                    <td><input value={task.desc} onChange={e => setLaborTask(i, 'desc', e.target.value)} /></td>
+                    <td><input type="number" value={task.hours} onChange={e => setLaborTask(i, 'hours', e.target.value)} /></td>
+                    <td><input type="number" value={task.rate} onChange={e => setLaborTask(i, 'rate', e.target.value)} /></td>
+                    <td>{formatMoney((Number(task.hours)||0)*(Number(task.rate)||0))}</td>
+                    <td><button type="button" className="secondary" onClick={() => removeLaborTask(i)}>Remove</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
 
-      <section className="margins">
-        <label>Waste %<input type="number" value={wastePct} onChange={e => setWastePct(e.target.value)} /></label>
-        <label>Overhead %<input type="number" value={overheadPct} onChange={e => setOverheadPct(e.target.value)} /></label>
-        <label>Profit %<input type="number" value={profitPct} onChange={e => setProfitPct(e.target.value)} /></label>
-        <label>Tax %<input type="number" step="0.1" value={taxRate} onChange={e => setTaxRate(e.target.value)} /></label>
-      </section>
+        <aside className="sidebar-panel">
+          <section className="card summary-card">
+            <div className="section-header">
+              <h2>Estimate Summary</h2>
+            </div>
+            <div className="summary-grid">
+              <div><span className="summary-label">Materials</span><strong>{formatMoney(materialTotal)}</strong></div>
+              <div><span className="summary-label">Waste buffer</span><strong>{formatMoney(wasteAmount)}</strong></div>
+              <div><span className="summary-label">Labor</span><strong>{formatMoney(laborTotal)}</strong></div>
+              <div><span className="summary-label">Overhead</span><strong>{formatMoney(overheadAmount)}</strong></div>
+              <div><span className="summary-label">Profit</span><strong>{formatMoney(profitAmount)}</strong></div>
+              {taxRate > 0 && <div><span className="summary-label">Tax</span><strong>{formatMoney(taxAmount)}</strong></div>}
+              <div className="summary-total"><span>Total</span><strong>{formatMoney(grandTotal)}</strong></div>
+            </div>
+          </section>
 
-      <section className="totals">
-        <h2>Estimate Summary</h2>
-        <div>Materials: <strong>{formatMoney(materialTotal)}</strong></div>
-        <div>Waste buffer ({wastePct}%): <strong>{formatMoney(wasteAmount)}</strong></div>
-        <div>Labor: <strong>{formatMoney(laborTotal)}</strong></div>
-        <div>Overhead ({overheadPct}%): <strong>{formatMoney(overheadAmount)}</strong></div>
-        <div>Profit ({profitPct}%): <strong>{formatMoney(profitAmount)}</strong></div>
-        {taxRate > 0 && <div>Tax ({taxRate}%): <strong>{formatMoney(taxAmount)}</strong></div>}
-        <div className="grand">Total Estimate: <strong>{formatMoney(grandTotal)}</strong></div>
-      </section>
+          <section className="card section-panel">
+            <div className="section-header">
+              <h2>Estimate Templates</h2>
+            </div>
+            <div className="template-actions">
+              <button type="button" className="secondary" onClick={saveTemplate}>Save as Template</button>
+              <button type="button" className="secondary" onClick={loadTemplates}>Refresh Templates</button>
+            </div>
+            {templates.length > 0 && (
+              <select onChange={e => { if (e.target.value) applyTemplate(e.target.value); e.target.value = '' }}>
+                <option value="">Apply template...</option>
+                {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            )}
+          </section>
+        </aside>
+      </div>
 
-      <section className="templates">
-        <h3>Estimate Templates</h3>
-        <button onClick={saveTemplate}>Save as Template</button>
-        <button onClick={loadTemplates}>Refresh Templates</button>
-        {templates.length > 0 && (
-          <select onChange={e => { if (e.target.value) applyTemplate(e.target.value); e.target.value = '' }}>
-            <option value="">Apply template...</option>
-            {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-        )}
-      </section>
+      <details className="collapsible-card">
+        <summary>Company Settings</summary>
+        <div className="collapsible-body">
+          <section className="company-settings">
+            <div>
+              <label>Company Name
+                <input value={companySettings.company_name} onChange={e => setCompanySettings({ ...companySettings, company_name: e.target.value })} />
+              </label>
+              <label>Address
+                <input value={companySettings.company_address} onChange={e => setCompanySettings({ ...companySettings, company_address: e.target.value })} />
+              </label>
+              <label>Phone
+                <input value={companySettings.company_phone} onChange={e => setCompanySettings({ ...companySettings, company_phone: e.target.value })} />
+              </label>
+              <label>Tax Rate (%)
+                <input type="number" step="0.1" value={taxRate} onChange={e => setTaxRate(e.target.value)} />
+              </label>
+              <label>Company Logo
+                <input type="file" accept="image/*" onChange={handleLogoUpload} />
+              </label>
+              {companySettings.logo_data && <div className="logo-preview">✓ Logo uploaded</div>}
+            </div>
+            <button type="button" className="primary" onClick={saveCompanySettings}>Save Settings</button>
+          </section>
+        </div>
+      </details>
+
+      <details className="collapsible-card">
+        <summary>Material Presets</summary>
+        <div className="collapsible-body">
+          <section className="material-presets">
+            <div className="preset-form">
+              <input placeholder="Preset name" value={newPresetName} onChange={e => setNewPresetName(e.target.value)} />
+              <input placeholder="Description" value={newPresetDesc} onChange={e => setNewPresetDesc(e.target.value)} />
+              <input type="number" placeholder="Qty" value={newPresetQty} onChange={e => setNewPresetQty(e.target.value)} />
+              <input type="number" placeholder="Unit price" value={newPresetPrice} onChange={e => setNewPresetPrice(e.target.value)} />
+              <button type="button" className="secondary" onClick={saveMaterialPreset}>Add Preset</button>
+            </div>
+            {materialPresets.length > 0 && (
+              <div className="preset-list">
+                {materialPresets.map(p => (
+                  <div key={p.id} className="preset-item">
+                    <span>{p.name} - {p.qty} x ${Number(p.unit_price).toFixed(2)}</span>
+                    <button type="button" className="secondary" onClick={() => addPresetToItems(p)}>+ Add</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      </details>
 
       <section className="actions">
-        <button onClick={previewQuote}>Preview / Print</button>
+        <button onClick={previewQuote} className="secondary">Preview / Print</button>
         <button onClick={saveQuote} className="primary">{editMode ? 'Update Quote' : 'Save Quote'}</button>
       </section>
     </div>

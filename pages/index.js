@@ -12,10 +12,13 @@ export default function Home() {
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </Head>
       <main className="container">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '20px' }}>
-          <h1>Contractor Estimator</h1>
-          <Link href="/quotes" className="primary">
-            View Saved Quotes
+        <div className="page-header">
+          <div>
+            <h1>Contractor Estimator</h1>
+            <p>Build estimates faster with a clean contractor workflow.</p>
+          </div>
+          <Link href="/quotes" className="secondary nav-action">
+            Saved Quotes
           </Link>
         </div>
         <EstimateForm />
