@@ -20,6 +20,9 @@ export default function Home() {
           <Link href="/quotes" className="secondary nav-action">
             Saved Quotes
           </Link>
+          <Link href="/calendar" className="primary nav-action">
+            Scheduler
+          </Link>
         </div>
         <EstimateForm />
       </main>

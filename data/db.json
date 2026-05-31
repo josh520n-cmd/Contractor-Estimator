@@ -72,6 +72,30 @@
       "notes": "",
       "data": "{\"phone\":\"252-3010278\",\"email\":\"josh520n@gmail.com\",\"jobAddress\":\"123 main\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"Josh\",\"notes\":\"\",\"items\":[{\"desc\":\"sheetrock\",\"qty\":\"35\",\"unit\":\"99\"},{\"desc\":\"\",\"qty\":1,\"unit\":0}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":3465,\"wasteAmount\":173.25,\"laborTotal\":200,\"overheadAmount\":383.82500000000005,\"profitAmount\":422.2075,\"taxAmount\":0,\"grandTotal\":4644.282499999999}}",
       "created_at": "2026-05-31T02:12:22.997Z"
+    },
+    {
+      "id": "3b089879-4893-410f-84cc-3c04f769523f",
+      "user_id": null,
+      "client": "josh",
+      "notes": "",
+      "data": "{\"phone\":\"252-301-0278\",\"email\":\"josh520n@gmail.com\",\"jobAddress\":\"123 mainn\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"josh\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05},\"startDate\":\"2026-06-04\",\"dueDate\":\"2026-06-17\"}",
+      "created_at": "2026-05-31T03:04:29.670Z"
+    },
+    {
+      "id": "7e4fe81c-05d4-4be5-a5d5-9ef46bbc8db0",
+      "user_id": null,
+      "client": "Josh",
+      "notes": "",
+      "data": "{\"phone\":\"252-301-0278\",\"email\":\"josh520n@gmail.com\",\"jobAddress\":\"123 mainn\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"Josh\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05},\"startDate\":\"2026-05-30\",\"dueDate\":\"2026-06-03\"}",
+      "created_at": "2026-05-31T03:40:54.015Z"
+    },
+    {
+      "id": "a342db3f-306a-4e38-bd16-6ff7d3a5322d",
+      "user_id": null,
+      "client": "josh",
+      "notes": "",
+      "data": "{\"phone\":\"12121212121\",\"email\":\"josh520n@gmail.com\",\"jobAddress\":\"123 mainn\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"josh\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05},\"startDate\":\"2026-05-30\",\"dueDate\":\"2026-06-02\"}",
+      "created_at": "2026-05-31T03:47:20.717Z"
     }
   ],
   "templates": [],

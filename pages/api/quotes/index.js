@@ -18,7 +18,9 @@ function serializeRow(row) {
     created_at: row.created_at,
     status: payload?.status || '',
     estimateNumber: payload?.estimateNumber || '',
-    total: Number(totals.grandTotal || totals.total || 0)
+    total: Number(totals.grandTotal || totals.total || 0),
+    startDate: payload.startDate || '',
+    dueDate: payload.dueDate || ''
   }
 }
 
@@ -68,7 +70,9 @@ export default function handler(req, res) {
             client: q.client,
             created_at: q.created_at,
             status: payload?.status || '',
-            total: Number(totals.grandTotal || totals.total || 0)
+            total: Number(totals.grandTotal || totals.total || 0),
+            startDate: payload.startDate || '',
+            dueDate: payload.dueDate || ''
           }
         })
       return res.json(rows)

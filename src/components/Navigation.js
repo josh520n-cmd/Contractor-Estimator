@@ -58,6 +58,7 @@ export default function Navigation() {
                 <span className="nav-badge pro">Pro ✓</span>
               )}
               <Link href="/quotes" className="nav-link nav-button-border">Quotes</Link>
+              <Link href="/calendar" className="nav-link">Calendar</Link> {/* Add Calendar link */}
               <Link href="/account" className="nav-link">Account</Link>
               <button onClick={logout} className="nav-logout">Logout</button>
             </>

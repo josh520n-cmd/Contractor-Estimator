@@ -1,177 +1,170 @@
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 
-function formatMoney(n) { return '$' + Number(n || 0).toFixed(2) }
+function formatMoney(n) { return '$' + Number(n || 0).toFixed(2); }
 
-export default function QuotePage() {
-  const router = useRouter()
-  const { id } = router.query
-  const [data, setData] = useState(null)
+// Component for quote details, designed to run client-side only
+function QuoteDetails({ id }) {
+  const router = useRouter();
+  const [quoteData, setQuoteData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Function to refetch data
+  const refetchData = async () => {
+    setLoading(true);
+    setError(null);
+    setQuoteData(null); // Reset data before refetching
+
+    try {
+      // 1. Try fetching from API
+      const res = await fetch(`/api/quotes/${id || router.query.id}`); 
+      if (res.ok) {
+        const data = await res.json();
+        setQuoteData(data);
+        setLoading(false);
+        console.log("Successfully fetched quote from API:", data);
+        return;
+      } else {
+        console.warn(`API fetch failed with status: ${res.status}`);
+      }
+    } catch (apiError) {
+      console.error("Error fetching quote from API:", apiError);
+    }
+
+    // 2. If API failed, try localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const localStorageKey = 'quotes_' + (id || router.query.id);
+        console.log("Attempting to read from localStorage with key:", localStorageKey);
+        
+        // --- NEW LOGGING: Log all localStorage keys ---
+        console.log("All keys in localStorage:", Object.keys(localStorage));
+        // --- END NEW LOGGING ---
+
+        const localValue = localStorage.getItem(localStorageKey);
+        
+        if (localValue && localValue !== 'null' && localValue !== 'undefined' && localValue.length > 0) {
+          console.log("Found value in localStorage:", localValue);
+          const parsed = JSON.parse(localValue);
+          console.log("Parsed value from localStorage (before payload construction):", parsed); 
+
+          if (parsed && typeof parsed === 'object') {
+            let quotePayload = { items: [], laborTasks: [] }; 
+
+            if (parsed.items && Array.isArray(parsed.items)) {
+              quotePayload.items = parsed.items;
+              quotePayload.laborTasks = Array.isArray(parsed.laborTasks) ? parsed.laborTasks : [];
+              quotePayload.overheadPct = parsed.overheadPct;
+              quotePayload.profitPct = parsed.profitPct;
+              quotePayload.wastePct = parsed.wastePct;
+              quotePayload.taxRate = parsed.taxRate;
+              quotePayload.companySettings = parsed.companySettings;
+              quotePayload.totals = parsed.totals;
+            } else if (parsed.payload && typeof parsed.payload === 'object') {
+              quotePayload = {
+                ...parsed.payload, 
+                items: Array.isArray(parsed.payload.items) ? parsed.payload.items : [], 
+                laborTasks: Array.isArray(parsed.payload.laborTasks) ? parsed.payload.laborTasks : [],
+              };
+            }
+            console.log("Constructed quotePayload:", quotePayload); 
+
+            setQuoteData({
+              id: id || router.query.id, 
+              client: parsed.client || '', 
+              notes: parsed.notes || '',   
+              payload: quotePayload, 
+              startDate: parsed.startDate || '',
+              dueDate: parsed.dueDate || '',
+            });
+            setLoading(false); // Set loading to false here after successful data load
+          } else {
+            console.error("localStorage data is not a valid object:", parsed);
+            setError("Invalid quote data format.");
+            setLoading(false); // Set loading to false on error
+          }
+        } else {
+          console.log("No valid value found in localStorage for key:", localStorageKey);
+          setError("Quote not found or empty.");
+          setLoading(false); // Set loading to false on error
+        }
+      } catch (localStorageError) {
+        console.error("Error reading from localStorage:", localStorageError);
+        setError("Could not load quote data from local storage.");
+        setLoading(false); // Set loading to false on error
+      }
+    } else {
+      console.error("Quote not found and not in a browser environment for localStorage.");
+      setError("Quote not found. Data unavailable.");
+      setLoading(false); // Set loading to false on error
+    }
+  };
 
   useEffect(() => {
-    if (!id) return
+    const currentId = id || router.query.id;
+    if (!currentId) return;
+    refetchData();
+  }, [id, router.query.id]);
 
-    async function loadQuote() {
-      try {
-        const res = await fetch(`/api/quotes/${id}`)
-        if (!res.ok) throw new Error('Quote not found')
-        const json = await res.json()
-        setData(json)
-      } catch (e) {
-        if (typeof window !== 'undefined') {
-          const localValue = localStorage.getItem('quotes_' + id)
-          if (localValue) {
-            try {
-              const parsed = JSON.parse(localValue)
-              const payload = parsed.payload || parsed
-              setData({
-                id,
-                client: parsed.client || payload.client || '',
-                notes: parsed.notes || payload.notes || '',
-                created_at: parsed.createdAt || parsed.created_at || new Date().toISOString(),
-                payload
-              })
-              return
-            } catch (err) {
-              console.error('Failed to parse local quote', err)
-            }
-          }
-        }
-        setData({ error: 'Quote not found' })
-      }
-    }
-
-    loadQuote()
-  }, [id])
-
-  async function duplicateQuote() {
-    const res = await fetch(`/api/quotes/${id}/duplicate`, { method: 'POST' })
-    if (res.ok) {
-      const { id: newId } = await res.json()
-      router.push(`/quotes/${newId}`)
-    } else {
-      alert('Duplicate failed')
-    }
+  if (loading) {
+    return <div className="container">Loading...</div>;
   }
 
-  function editQuote() {
-    router.push(`/edit/${id}`)
+  if (error) {
+    return <div className="container error-message">{error}</div>;
   }
 
-  function saveQuote() {
-    try {
-      const payloadData = {
-        id,
-        client,
-        phone,
-        email,
-        jobAddress,
-        estimateNumber,
-        status: statusValue,
-        notes,
-        created_at,
-        payload
-      }
-      localStorage.setItem('quotes_' + id, JSON.stringify(payloadData))
-      alert('Quote saved successfully')
-    } catch (err) {
-      console.error('Save failed', err)
-      alert('Unable to save quote locally')
-    }
+  if (!quoteData) {
+    return <div className="container">No quote data available.</div>;
   }
-
-  if (!data) return <main className="container"><p>Loading...</p></main>
-  if (data.error) return <main className="container"><p>{data.error}</p></main>
-
-  const { client, notes, created_at, payload = {} } = data
-  const items = payload.items || []
-  const laborTasks = payload.laborTasks || []
-  const totals = payload.totals || {}
-  const phone = data.phone || payload.phone || ''
-  const email = data.email || payload.email || ''
-  const jobAddress = data.jobAddress || payload.jobAddress || ''
-  const estimateNumber = data.estimateNumber || payload.estimateNumber || ''
-  const statusValue = data.status || payload.status || ''
-  const companySettings = payload.companySettings || {}
 
   return (
-    <main className="printable quote-detail-page">
-      <div className="print-actions quote-actions-top">
-        <button onClick={saveQuote} className="primary">Save Quote</button>
-        <button onClick={() => window.location.href = `/api/quotes/${id}/pdf`}>Download PDF</button>
-        <button onClick={() => window.open(`/api/quotes/${id}/pdf`, '_blank')}>Open PDF</button>
-        <button onClick={editQuote} className="secondary">Edit Quote</button>
-        <button onClick={duplicateQuote} className="secondary">Duplicate Quote</button>
-        <button onClick={() => router.push('/print')}>Preview from local</button>
-      </div>
-      <header className="quote-header">
-        <h1>Saved Quote</h1>
-        <div className="quote-header-grid">
-          {companySettings.company_name && (
-            <div>
-              <strong>{companySettings.company_name}</strong>
-              {companySettings.company_address && <div>{companySettings.company_address}</div>}
-              {companySettings.company_phone && <div>{companySettings.company_phone}</div>}
-            </div>
-          )}
-          <div>Client: <strong>{client}</strong></div>
-          {phone && <div>Phone: <strong>{phone}</strong></div>}
-          {email && <div className="quote-header-email">Email: <strong>{email}</strong></div>}
-          {jobAddress && <div className="quote-header-jobaddress">Job Address: <strong>{jobAddress}</strong></div>}
-          {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
-          {statusValue && <div>Status: <strong>{statusValue}</strong></div>}
-          <div>Date: <strong>{new Date(created_at).toLocaleString()}</strong></div>
+    <main className="container">
+      <div className="page-header">
+        <div>
+          <h1>Quote #{quoteData.id ? quoteData.id.substring(0, 6) : 'N/A'}</h1>
+          <p>Client: {quoteData.client || 'N/A'}</p>
+          {quoteData.startDate && <p>Start Date: {new Date(quoteData.startDate).toLocaleDateString()}</p>}
+          {quoteData.dueDate && <p>Due Date: {new Date(quoteData.dueDate).toLocaleDateString()}</p>}
         </div>
-      </header>
+        <button onClick={refetchData} className="secondary">Refresh Quote</button>
+      </div>
 
-      <section className="section-panel">
-        <h2>Items</h2>
-        <table className="print-table">
-          <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Line</th></tr></thead>
-          <tbody>
-            {items.map((it, i) => (
-              <tr key={i}><td>{it.desc}</td><td>{it.qty}</td><td>{formatMoney(it.unit)}</td><td>{formatMoney((Number(it.qty)||0)*(Number(it.unit)||0))}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      {laborTasks.length > 0 && (
-        <section className="section-panel">
-          <h2>Labor Tasks</h2>
-          <table className="print-table">
-            <thead><tr><th>Description</th><th>Hours</th><th>Rate</th><th>Line</th></tr></thead>
-            <tbody>
-              {laborTasks.map((task, i) => (
-                <tr key={i}>
-                  <td>{task.desc}</td>
-                  <td>{task.hours}</td>
-                  <td>{formatMoney(task.rate)}</td>
-                  <td>{formatMoney((Number(task.hours)||0)*(Number(task.rate)||0))}</td>
-                </tr>
+      {quoteData.payload && Object.keys(quoteData.payload).length > 0 ? (
+        <section>
+          <h2>Details</h2>
+          {quoteData.payload.items && quoteData.payload.items.length > 0 ? (
+            <ul>
+              {quoteData.payload.items.map((item, index) => (
+                <li key={index}>
+                  {item.name} - {formatMoney(item.price)}
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          ) : (
+            <p>No items in payload.</p>
+          )}
+        </section>
+      ) : (
+        <section>
+          <h2>Details</h2>
+          <p>No details available.</p>
         </section>
       )}
 
-      <section className="section-panel quote-summary-panel">
-        <h2>Summary</h2>
-        <div>Materials: <strong>{formatMoney(totals.materialTotal)}</strong></div>
-        <div>Waste buffer: <strong>{formatMoney(totals.wasteAmount)}</strong></div>
-        <div>Labor: <strong>{formatMoney(totals.laborTotal)}</strong></div>
-        <div>Overhead: <strong>{formatMoney(totals.overheadAmount)}</strong></div>
-        <div>Profit: <strong>{formatMoney(totals.profitAmount)}</strong></div>
-        {payload.taxRate > 0 && <div>Tax: <strong>{formatMoney(totals.taxAmount)}</strong></div>}
-        <div className="grand">Total: <strong>{formatMoney(totals.grandTotal)}</strong></div>
-      </section>
 
-      {notes && (
-        <section className="section-panel">
+      {quoteData.notes && (
+        <section>
           <h2>Notes</h2>
-          <p>{notes}</p>
+          <p>{quoteData.notes}</p>
         </section>
       )}
     </main>
-  )
+  );
 }
+
+const QuotePage = dynamic(() => Promise.resolve(QuoteDetails), { ssr: false });
+
+export default QuotePage;

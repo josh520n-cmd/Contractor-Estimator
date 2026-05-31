@@ -39,6 +39,8 @@ export default function EstimateForm({ existingQuoteId = null }) {
   const [jobAddress, setJobAddress] = useState('')
   const [status, setStatus] = useState('Draft')
   const [notes, setNotes] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [dueDate, setDueDate] = useState('')
   const [editMode, setEditMode] = useState(false)
 
   // Material presets
@@ -129,6 +131,8 @@ export default function EstimateForm({ existingQuoteId = null }) {
     setOverheadPct(payload.overheadPct || 10)
     setProfitPct(payload.profitPct || 10)
     setWastePct(payload.wastePct || 5)
+    setStartDate(data.startDate || '')
+    setDueDate(data.dueDate || '')
     setEditMode(true)
   }
 
@@ -292,21 +296,25 @@ export default function EstimateForm({ existingQuoteId = null }) {
         taxAmount,
         grandTotal
       },
-      createdAt: new Date().toISOString()
+      startDate,
+      dueDate
     }
     try {
       localStorage.setItem('latestEstimate', JSON.stringify(data))
-    } catch (e) {}
+      console.log('Successfully saved to localStorage for preview: latestEstimate', data)
+    } catch (e) {
+      console.error('Error saving to localStorage for preview: latestEstimate', e)
+    }
     router.push('/print')
   }
 
   async function saveQuote() {
     const payload = {
       phone,
-email,
-jobAddress,
-estimateNumber,
-status,
+      email,
+      jobAddress,
+      estimateNumber,
+      status,
       client,
       notes,
       items,
@@ -324,7 +332,9 @@ status,
         profitAmount,
         taxAmount,
         grandTotal
-      }
+      },
+      startDate,
+      dueDate
     }
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -344,10 +354,16 @@ status,
       if (res.ok) {
         const { id } = await res.json()
         const createdAt = new Date().toISOString()
+        // Ensure payload structure for localStorage matches what pages/quotes/[id].js expects
+        const quoteDataToSave = { ...payload, id, createdAt };
         try {
-          localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, id, createdAt }))
-          localStorage.setItem('quotes_' + id, JSON.stringify({ ...payload, id, createdAt }))
-        } catch (e) {}
+          localStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
+          localStorage.setItem('quotes_' + id, JSON.stringify(quoteDataToSave))
+          console.log('Successfully saved to localStorage for new quote:', 'quotes_' + id, quoteDataToSave)
+          console.log('Successfully saved to localStorage for new quote:', 'latestEstimate', quoteDataToSave)
+        } catch (e) {
+          console.error('Error saving to localStorage for new quote:', e)
+        }
         alert('Quote saved successfully')
         router.push(`/quotes/${id}`)
       } else {
@@ -355,11 +371,15 @@ status,
         try {
           const id = 'quote_' + Date.now()
           const createdAt = new Date().toISOString()
-          localStorage.setItem('quotes_' + id, JSON.stringify({ ...payload, id, createdAt }))
-          localStorage.setItem('latestEstimate', JSON.stringify({ ...payload, id, createdAt }))
+          const fallbackPayload = { ...payload, id, createdAt };
+          localStorage.setItem('quotes_' + id, JSON.stringify(fallbackPayload))
+          localStorage.setItem('latestEstimate', JSON.stringify(fallbackPayload))
+          console.log('Fallback save to localStorage: quotes_' + id, fallbackPayload)
+          console.log('Fallback save to localStorage: latestEstimate', fallbackPayload)
           alert('💾 Quote saved to your device (database unavailable). Sync will happen automatically when database is available.')
           router.push(`/quotes/${id}`)
         } catch (e) {
+          console.error('Fallback save to localStorage failed:', e)
           alert('Save failed - unable to save to database or device')
         }
       }
@@ -419,7 +439,7 @@ status,
       {editMode && <div className="edit-notice">📝 Editing existing quote</div>}
 
       <section className="card client-card">
-        <div className="card-header">
+        <div className="header">
           <div>
             <p className="eyebrow">Client Information</p>
             <h2>Estimate details</h2>
@@ -437,6 +457,8 @@ status,
           <label>Job Address<input value={jobAddress} onChange={e => setJobAddress(e.target.value)} placeholder="123 Main St" /></label>
           <label>Estimate #<input value={estimateNumber} onChange={e => setEstimateNumber(e.target.value)} /></label>
           <label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option>Draft</option><option>Sent</option><option>Approved</option><option>Declined</option><option>Paid</option></select></label>
+          <label>Start Date<input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} /></label>
+          <label>Due Date<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label>
         </div>
 
         <label className="notes-block">Notes<textarea value={notes} onChange={e => setNotes(e.target.value)} /></label>
