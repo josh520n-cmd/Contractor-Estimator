@@ -19,7 +19,7 @@ section{margin-bottom:24px}
 .card,.section-panel,.quote-header,.quote-list-table,.quote-detail-table{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow)}
 .quote-header{padding:24px}
 .section-panel{padding:24px}
-.field-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:18px}
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:24px;}
 .field-grid label{margin:0}
 .field-grid input,.field-grid select{min-width:0}
 .notes-block{display:block;margin-top:18px}
@@ -43,7 +43,7 @@ section{margin-bottom:24px}
 .quote-header-grid{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:18px;align-items:start}
 .quote-header-grid>div{margin:0;min-width:0;word-break:break-word;overflow-wrap:anywhere;color:#334155}
 .quote-header-grid strong{color:#111827}
-.quote-actions-top{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-bottom:20px}
+.quote-actions-top{display:flex;flex-wrap:wrap;gap:20px;justify-content:flex-start;margin-bottom:20px}
 .page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px}
 .page-header p{max-width:520px;margin-top:10px;color:#475569}
 .search-panel{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
@@ -58,7 +58,7 @@ button:hover{transform:translateY(-1px)}
 .secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--surface-soft);border:1px solid #cbd5e1;color:#0f172a;font-weight:600}
 .secondary:hover{background:#f8fafc}
 button.secondary:disabled,button.primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.actions,.print-actions{display:flex;flex-wrap:wrap;gap:12px}
+.actions,.print-actions{display:flex;flex-wrap:wrap;gap:20px}
 table{width:100%;border-collapse:collapse;border-radius:20px;overflow:hidden}
 table th,table td{padding:16px 18px;border-bottom:1px solid #e2e8f0;text-align:left}
 table th{background:#f8fafc;color:#475569;font-size:.95rem;letter-spacing:.02em}
@@ -99,9 +99,9 @@ table tbody tr:hover{background:#f8fbff}
   .search-panel{flex-direction:column}
   .quote-header-grid{grid-template-columns:1fr}
   .quote-header-email,.quote-header-jobaddress{grid-column:auto}
-  .print-actions,.actions{flex-direction:column;align-items:stretch}
+  .print-actions,.actions{flex-direction:column;align-items:stretch;gap:12px}
   .quote-actions-top button,.quote-actions-top a.primary,.actions button,.actions a.primary{width:100%}
-  .field-grid{grid-template-columns:1fr}
+  .field-grid{grid-template-columns:1fr;gap:18px}
 }
 @media (max-width:600px){
   body{padding:12px}
@@ -355,4 +355,16 @@ button {
 .summary-controls input {
   width: 90px !important;
   padding: 8px 10px !important;
+}
+
+.nav-button-border {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-right: 15px; /* Increased margin-right for more space */
+  background-color: #f8fafc;
+}
+
+.nav-button-border:last-child {
+  margin-right: 0;
 }
