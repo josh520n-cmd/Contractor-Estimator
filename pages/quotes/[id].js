@@ -37,6 +37,10 @@ function QuoteDetails({ id }) {
     if (typeof window !== 'undefined') {
       try {
         const localStorageKey = 'quotes_' + (id || router.query.id);
+        console.log("Quote ID:", id);
+console.log("Router Query ID:", router.query.id);
+console.log("Storage Key:", localStorageKey);
+console.log("All localStorage Keys:", Object.keys(localStorage));
         console.log("Attempting to read from localStorage with key:", localStorageKey);
         
         // --- NEW LOGGING: Log all localStorage keys ---
