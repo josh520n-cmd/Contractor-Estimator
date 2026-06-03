@@ -76,12 +76,30 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
             console.log("Constructed quotePayload:", quotePayload); 
 
             setQuoteData({
-              id: id || router.query.id, 
-              client: parsed.client || '', 
-              notes: parsed.notes || '',   
-              payload: quotePayload, 
-              startDate: parsed.startDate || '',
-              dueDate: parsed.dueDate || '',
+              id: parsed.id || id || router.query.id,
+              client: parsed.client || parsed.customerName || parsed.customer || '',
+              notes: parsed.notes || '',
+              payload: {
+                ...quotePayload,
+                items: Array.isArray(parsed.items)
+                  ? parsed.items
+                  : Array.isArray(parsed.payload?.items)
+                    ? parsed.payload.items
+                    : [],
+                laborTasks: Array.isArray(parsed.laborTasks)
+                  ? parsed.laborTasks
+                  : Array.isArray(parsed.payload?.laborTasks)
+                    ? parsed.payload.laborTasks
+                    : [],
+                totals: parsed.totals || parsed.payload?.totals || {},
+                overheadPct: parsed.overheadPct ?? parsed.payload?.overheadPct,
+                profitPct: parsed.profitPct ?? parsed.payload?.profitPct,
+                wastePct: parsed.wastePct ?? parsed.payload?.wastePct,
+                taxRate: parsed.taxRate ?? parsed.payload?.taxRate,
+                companySettings: parsed.companySettings || parsed.payload?.companySettings || {},
+              },
+              startDate: parsed.startDate || parsed.scheduledStartDate || '',
+              dueDate: parsed.dueDate || parsed.endDate || parsed.scheduledEndDate || '',
             });
             setLoading(false); // Set loading to false here after successful data load
           } else {
@@ -123,42 +141,71 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
   if (!quoteData) {
     return <div className="container">No quote data available.</div>;
   }
-
   return (
     <main className="container">
       <div className="page-header">
         <div>
-          <h1>Quote #{quoteData.id ? quoteData.id.substring(0, 6) : 'N/A'}</h1>
-          <p>Client: {quoteData.client || 'N/A'}</p>
+          <h1>Quote #{quoteData.id ? String(quoteData.id).substring(0, 6) : "N/A"}</h1>
+          <p>Client: {quoteData.client || "N/A"}</p>
           {quoteData.startDate && <p>Start Date: {new Date(quoteData.startDate).toLocaleDateString()}</p>}
           {quoteData.dueDate && <p>Due Date: {new Date(quoteData.dueDate).toLocaleDateString()}</p>}
         </div>
-        <button onClick={refetchData} className="secondary">Refresh Quote</button>
+  
+        <button onClick={refetchData} className="secondary">
+          Refresh Quote
+        </button>
       </div>
-
-      {quoteData.payload && Object.keys(quoteData.payload).length > 0 ? (
-        <section>
-          <h2>Details</h2>
-          {quoteData.payload.items && quoteData.payload.items.length > 0 ? (
-            <ul>
-              {quoteData.payload.items.map((item, index) => (
-                <li key={index}>
-                  {item.name} - {formatMoney(item.price)}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No items in payload.</p>
-          )}
-        </section>
-      ) : (
-        <section>
-          <h2>Details</h2>
-          <p>No details available.</p>
-        </section>
-      )}
-
-
+  
+      <section>
+        <h2>Items</h2>
+        {quoteData.payload?.items?.length ? (
+          <ul>
+            {quoteData.payload.items.map((item, index) => (
+              <li key={index}>
+                {item.name || item.description || item.desc || item.label || item.material || "Item"} -{" "}
+                {formatMoney(
+                  item.total ??
+                  item.lineTotal ??
+                  item.price ??
+                  (Number(item.qty || item.quantity || 0) *
+                    Number(item.unit || item.unitPrice || item.unit_price || 0))
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No items available.</p>
+        )}
+  
+        <h2>Labor Tasks</h2>
+        {quoteData.payload?.laborTasks?.length ? (
+          <ul>
+            {quoteData.payload.laborTasks.map((task, index) => (
+              <li key={index}>
+                {task.name || task.description || task.desc || task.task || "Labor"} -{" "}
+                {formatMoney(
+                  task.total ??
+                  task.lineTotal ??
+                  task.price ??
+                  (Number(task.hours || task.qty || 0) *
+                    Number(task.rate || task.unit || 0))
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No labor tasks available.</p>
+        )}
+  
+        <h2>Totals</h2>
+        <p>Materials: {formatMoney(quoteData.payload?.totals?.materialTotal || 0)}</p>
+        <p>Labor: {formatMoney(quoteData.payload?.totals?.laborTotal || 0)}</p>
+        <p>Overhead: {formatMoney(quoteData.payload?.totals?.overheadAmount || 0)}</p>
+        <p>Profit: {formatMoney(quoteData.payload?.totals?.profitAmount || 0)}</p>
+        <p>Tax: {formatMoney(quoteData.payload?.totals?.taxAmount || 0)}</p>
+        <p><strong>Total: {formatMoney(quoteData.payload?.totals?.grandTotal || 0)}</strong></p>
+      </section>
+  
       {quoteData.notes && (
         <section>
           <h2>Notes</h2>
@@ -167,8 +214,11 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
       )}
     </main>
   );
-}
-
-const QuotePage = dynamic(() => Promise.resolve(QuoteDetails), { ssr: false });
-
-export default QuotePage;
+ 
+  }
+  
+  const QuotePage = dynamic(() => Promise.resolve(QuoteDetails), {
+    ssr: false,
+  });
+  
+  export default QuotePage;

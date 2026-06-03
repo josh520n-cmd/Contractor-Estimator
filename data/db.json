@@ -96,6 +96,22 @@
       "notes": "",
       "data": "{\"phone\":\"12121212121\",\"email\":\"josh520n@gmail.com\",\"jobAddress\":\"123 mainn\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"josh\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05},\"startDate\":\"2026-05-30\",\"dueDate\":\"2026-06-02\"}",
       "created_at": "2026-05-31T03:47:20.717Z"
+    },
+    {
+      "id": "35d6f6d0-8c25-4f91-b4a2-c456a85ff9cc",
+      "user_id": null,
+      "client": "jj",
+      "notes": "",
+      "data": "{\"phone\":\"232-675-8798\",\"email\":\"jj@gmail.com\",\"jobAddress\":\"123 mainn\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"jj\",\"notes\":\"\",\"items\":[{\"desc\":\"Example item\",\"qty\":1,\"unit\":100}],\"laborTasks\":[{\"desc\":\"Example labor task\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":100,\"wasteAmount\":5,\"laborTotal\":200,\"overheadAmount\":30.5,\"profitAmount\":33.550000000000004,\"taxAmount\":0,\"grandTotal\":369.05},\"startDate\":\"2026-06-01\",\"dueDate\":\"2026-06-10\"}",
+      "created_at": "2026-06-01T20:24:43.921Z"
+    },
+    {
+      "id": "501752b1-e305-4231-aea8-339d42bd22eb",
+      "user_id": null,
+      "client": "josh",
+      "notes": "",
+      "data": "{\"phone\":\"123-123-1234\",\"email\":\"josh@gmail.com\",\"jobAddress\":\"123 Main\",\"estimateNumber\":\"Est-1001\",\"status\":\"Draft\",\"client\":\"josh\",\"notes\":\"\",\"items\":[{\"desc\":\"sheetrock\",\"qty\":1,\"unit\":100},{\"desc\":\"tile\",\"qty\":\"23\",\"unit\":\"50\"}],\"laborTasks\":[{\"desc\":\"tile work\",\"hours\":4,\"rate\":50}],\"overheadPct\":10,\"profitPct\":10,\"wastePct\":5,\"taxRate\":0,\"companySettings\":{\"logo_data\":null,\"tax_rate\":0,\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\"},\"totals\":{\"materialTotal\":1250,\"wasteAmount\":62.5,\"laborTotal\":200,\"overheadAmount\":151.25,\"profitAmount\":166.375,\"taxAmount\":0,\"grandTotal\":1830.125},\"startDate\":\"2026-06-02\",\"dueDate\":\"2026-06-04\"}",
+      "created_at": "2026-06-03T02:20:54.072Z"
     }
   ],
   "templates": [],
