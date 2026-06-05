@@ -112,6 +112,61 @@ export default function Print() {
           <p>{notes}</p>
         </section>
       )}
+      <section className="contract-section">
+  <h2>Work Authorization Agreement</h2>
+
+  <p>
+    By signing below, the customer approves this estimate and authorizes the
+    contractor to begin the work described in this document.
+  </p>
+
+  <h3>Scope of Work</h3>
+  <p>{estimate.notes || 'Work will be completed as described in this estimate.'}</p>
+
+  <h3>Payment Terms</h3>
+  <p>
+    Total agreed price: {formatMoney(estimate.totals?.grandTotal || 0)}.
+    Payment is due according to the agreement between customer and contractor.
+  </p>
+
+  <h3>Change Orders</h3>
+  <p>
+    Any work not listed in this estimate may require a written change order
+    and may increase the final price.
+  </p>
+
+  <h3>Customer Responsibilities</h3>
+  <p>
+    Customer agrees to provide access to the job site and approve any required
+    changes before additional work begins.
+  </p>
+
+  <h3>Signatures</h3>
+
+  <div className="signature-row">
+    <div>
+      <div className="signature-line"></div>
+      <p>Customer Signature</p>
+    </div>
+
+    <div>
+      <div className="signature-line"></div>
+      <p>Date</p>
+    </div>
+  </div>
+
+  <div className="signature-row">
+    <div>
+      <div className="signature-line"></div>
+      <p>Contractor Signature</p>
+    </div>
+
+    <div>
+      <div className="signature-line"></div>
+      <p>Date</p>
+    </div>
+  </div>
+</section>
     </main>
   )
 }

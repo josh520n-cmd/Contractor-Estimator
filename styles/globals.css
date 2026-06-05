@@ -368,3 +368,46 @@ button {
 .nav-button-border:last-child {
   margin-right: 0;
 }
+.contract-section {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 2px solid #ddd;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.contract-section h2 {
+  margin-bottom: 12px;
+}
+
+.contract-section h3 {
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+
+.signature-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  margin-top: 35px;
+}
+
+.signature-row > div {
+  flex: 1;
+}
+
+.signature-line {
+  border-bottom: 1px solid #000;
+  height: 35px;
+}
+
+@media print {
+  .contract-section {
+    page-break-inside: avoid;
+  }
+
+  button,
+  .no-print {
+    display: none !important;
+  }
+}

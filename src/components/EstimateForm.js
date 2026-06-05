@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { db } from './firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 function formatMoney(n) {
   return '$' + Number(n || 0).toFixed(2)
@@ -336,60 +338,64 @@ export default function EstimateForm({ existingQuoteId = null }) {
       startDate,
       dueDate
     }
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = { 'content-type': 'application/json' }
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    
+  
     if (editMode && existingQuoteId) {
-      const res = await fetch(`/api/quotes/${existingQuoteId}`, { method: 'PUT', headers, body: JSON.stringify(payload) })
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const headers = { 'content-type': 'application/json' }
+      if (token) headers['Authorization'] = `Bearer ${token}`
+  
+      const res = await fetch(`/api/quotes/${existingQuoteId}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload)
+      })
+  
       if (res.ok) {
         alert('Quote updated')
         router.push(`/quotes/${existingQuoteId}`)
       } else {
         alert('Update failed')
       }
-    } else {
-      const res = await fetch('/api/quotes', { method: 'POST', headers, body: JSON.stringify(payload) })
-      if (res.ok) {
-        const { id } = await res.json()
-        const createdAt = new Date().toISOString()
-        // Ensure payload structure for localStorage matches what pages/quotes/[id].js expects
-        const quoteDataToSave = { ...payload, id, createdAt };
-        try {
-          localStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
-          localStorage.setItem('quotes_' + id, JSON.stringify(quoteDataToSave))
-          console.log('Successfully saved to localStorage for new quote:', 'quotes_' + id, quoteDataToSave)
-          console.log('Successfully saved to localStorage for new quote:', 'latestEstimate', quoteDataToSave)
-        } catch (e) {
-          console.error('Error saving to localStorage for new quote:', e)
-        }
-        alert('Quote saved successfully')
-        router.push(`/quotes/${id}`)
-      } else {
-        // Try to save to localStorage as fallback
-        try {
-          const id = 'quote_' + Date.now()
-          const createdAt = new Date().toISOString()
-          const fallbackPayload = { ...payload, id, createdAt };
-          localStorage.setItem('quotes_' + id, JSON.stringify(fallbackPayload))
-          localStorage.setItem('latestEstimate', JSON.stringify(fallbackPayload))
-          console.log('Fallback save to localStorage: quotes_' + id, fallbackPayload)
-          console.log('Fallback save to localStorage: latestEstimate', fallbackPayload)
-          alert('💾 Quote saved to your device (database unavailable). Sync will happen automatically when database is available.')
-          router.push(`/quotes/${id}`)
-        } catch (e) {
-          console.error('Fallback save to localStorage failed:', e)
-          alert('Save failed - unable to save to database or device')
-        }
-      }
+  
+      return
+    }
+  
+    try {
+      const createdAt = new Date().toISOString()
+  
+      const docRef = await addDoc(collection(db, 'quotes'), {
+        ...payload,
+        createdAt
+      })
+  
+      const id = docRef.id
+      const quoteDataToSave = { ...payload, id, createdAt }
+  
+      localStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
+      localStorage.setItem('quotes_' + id, JSON.stringify(quoteDataToSave))
+  
+      alert('Quote saved successfully')
+      router.push(`/quotes/${id}`)
+    } catch (e) {
+      console.error('Firestore save failed:', e)
+  
+      const id = 'quote_' + Date.now()
+      const createdAt = new Date().toISOString()
+      const fallbackPayload = { ...payload, id, createdAt }
+  
+      localStorage.setItem('quotes_' + id, JSON.stringify(fallbackPayload))
+      localStorage.setItem('latestEstimate', JSON.stringify(fallbackPayload))
+  
+      alert('Quote saved to device only. Database save failed.')
+      router.push(`/quotes/${id}`)
     }
   }
-
+  
   async function loadTemplates() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     const headers = {}
     if (token) headers['Authorization'] = `Bearer ${token}`
+  
     try {
       const res = await fetch('/api/templates', { headers })
       if (res.ok) setTemplates(await res.json())
@@ -397,43 +403,58 @@ export default function EstimateForm({ existingQuoteId = null }) {
       console.log('Failed to load templates:', e.message)
     }
   }
-
+  
   async function saveTemplate() {
     const name = prompt('Template name')
     if (!name) return
+  
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     const headers = { 'content-type': 'application/json' }
     if (token) headers['Authorization'] = `Bearer ${token}`
-    const payload = { name, data: { items, laborTasks, overheadPct, profitPct, wastePct } }
+  
+    const payload = {
+      name,
+      data: { items, laborTasks, overheadPct, profitPct, wastePct }
+    }
+  
     try {
-      const res = await fetch('/api/templates', { method: 'POST', headers, body: JSON.stringify(payload) })
+      const res = await fetch('/api/templates', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      })
+  
       if (res.ok) {
         alert('Template saved successfully')
         loadTemplates()
       } else {
-        alert('Failed to save template (will try localStorage)')
+        alert('Failed to save template')
       }
     } catch (e) {
-      alert('Template saved to device (database unavailable)')
+      alert('Template saved to device only')
     }
   }
-
+  
   async function applyTemplate(id) {
     const res = await fetch(`/api/templates/${id}`)
     if (!res.ok) return
+  
     const json = await res.json()
     const d = json.data || {}
+  
     setItems(d.items || [])
+  
     if (Array.isArray(d.laborTasks) && d.laborTasks.length) {
       setLaborTasks(d.laborTasks)
     } else {
       setLaborTasks([{ desc: 'Labor', hours: d.laborHours || 0, rate: d.laborRate || 0 }])
     }
+  
     setOverheadPct(d.overheadPct || 10)
     setProfitPct(d.profitPct || 10)
     setWastePct(d.wastePct || 5)
   }
-
+  
   return (
     <div className="estimate-builder">
       {editMode && <div className="edit-notice">📝 Editing existing quote</div>}
