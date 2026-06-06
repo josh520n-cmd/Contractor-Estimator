@@ -154,6 +154,44 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
         <button onClick={refetchData} className="secondary">
           Refresh Quote
         </button>
+        <button
+  onClick={() => {
+    const printData = {
+      ...quoteData,
+      ...(quoteData.payload || {}),
+    }
+
+    localStorage.setItem('latestEstimate', JSON.stringify(printData))
+    router.push('/print')
+  }}
+>
+  Print / Save PDF
+</button>
+<button
+  onClick={async () => {
+
+    const emailData = {
+      ...quoteData,
+      ...(quoteData.payload || {})
+    }
+
+    const response = await fetch('/api/send-quote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(emailData)
+    })
+
+    if (response.ok) {
+      alert('Quote emailed successfully!')
+    } else {
+      alert('Email failed.')
+    }
+  }}
+>
+  Email Quote
+</button>
       </div>
   
       <section>

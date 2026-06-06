@@ -19,6 +19,8 @@ export default function Print() {
     phone,
     email,
     jobAddress,
+    startDate,
+dueDate,
     estimateNumber,
     status,
     items,
@@ -61,7 +63,13 @@ export default function Print() {
         {jobAddress && <div>Job Address: <strong>{jobAddress}</strong></div>}
         {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
         {status && <div>Status: <strong>{status}</strong></div>}
-        <div>Date: <strong>{new Date(createdAt).toLocaleString()}</strong></div>
+        {startDate && (
+  <div>Start Date: <strong>{startDate}</strong></div>
+)}
+
+{dueDate && (
+  <div>Due Date: <strong>{dueDate}</strong></div>
+)}
       </header>
 
       <section>
@@ -121,11 +129,11 @@ export default function Print() {
   </p>
 
   <h3>Scope of Work</h3>
-  <p>{estimate.notes || 'Work will be completed as described in this estimate.'}</p>
+  <p>{notes || 'Work will be completed as described in this estimate.'}</p>
 
   <h3>Payment Terms</h3>
   <p>
-    Total agreed price: {formatMoney(estimate.totals?.grandTotal || 0)}.
+  Total agreed price: {formatMoney(totals?.grandTotal || 0)}.
     Payment is due according to the agreement between customer and contractor.
   </p>
 
