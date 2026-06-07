@@ -37,7 +37,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
   const [client, setClient] = useState('')
   const [estimateNumber, setEstimateNumber] = useState('')
   const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
   const [jobAddress, setJobAddress] = useState('')
   const [status, setStatus] = useState('Draft')
   const [notes, setNotes] = useState('')
@@ -281,6 +281,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
   function previewQuote() {
     const data = {
       client,
+      customerEmail,
       notes,
       items,
       laborTasks,
@@ -311,9 +312,10 @@ export default function EstimateForm({ existingQuoteId = null }) {
   }
 
   async function saveQuote() {
+    console.log('customerEmail before save:', customerEmail)
     const payload = {
       phone,
-      email,
+      customerEmail,
       jobAddress,
       estimateNumber,
       status,
@@ -474,7 +476,13 @@ export default function EstimateForm({ existingQuoteId = null }) {
         <div className="field-grid">
           <label>Client name<input value={client} onChange={e => setClient(e.target.value)} placeholder="Client or job name"/></label>
           <label>Phone<input value={phone} onChange={e => setPhone(e.target.value)} placeholder="123-456-7890" /></label>
-          <label>Email<input value={email} onChange={e => setEmail(e.target.value)} placeholder="customer@email.com" /></label>
+          <label>customerEmail
+  <input
+    value={customerEmail}
+    onChange={e => setCustomerEmail(e.target.value)}
+    placeholder="customer@email.com"
+  />
+</label>
           <label>Job Address<input value={jobAddress} onChange={e => setJobAddress(e.target.value)} placeholder="123 Main St" /></label>
           <label>Estimate #<input value={estimateNumber} onChange={e => setEstimateNumber(e.target.value)} /></label>
           <label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option>Draft</option><option>Sent</option><option>Approved</option><option>Declined</option><option>Paid</option></select></label>

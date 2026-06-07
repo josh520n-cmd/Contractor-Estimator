@@ -45,15 +45,17 @@ export default function handler(req, res) {
           // Proceed with empty payload if parsing fails
         }
         // Construct response similar to DB version
-        return res.json({ 
-          id: row.id, 
-          client: row.client, 
-          notes: row.notes, 
-          // Use a placeholder for created_at if not available in storage, or omit
-          created_at: row.created_at || new Date().toISOString(), 
-          startDate: row.startDate, 
-          dueDate: row.dueDate, 
-          payload 
+        return res.json({
+          id: row.id,
+          client: row.client,
+          customerEmail: row.customerEmail || payload.customerEmail || payload?.payload?.customerEmail || '',
+          phone: row.phone || payload.phone || payload?.payload?.phone || '',
+          jobAddress: row.jobAddress || payload.jobAddress || payload?.payload?.jobAddress || '',
+          notes: row.notes,
+          created_at: row.created_at || new Date().toISOString(),
+          startDate: row.startDate,
+          dueDate: row.dueDate,
+          payload
         });
       } else {
         console.log(`API: Quote ${id} not found in localStorage.`);

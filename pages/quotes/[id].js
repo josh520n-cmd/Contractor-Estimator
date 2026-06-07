@@ -20,13 +20,24 @@ function QuoteDetails({ id }) {
     try {
       // 1. Try fetching from API
       const res = await fetch(`/api/quotes/${id || router.query.id}`); 
-      if (res.ok) {
-        const data = await res.json();
-        setQuoteData(data);
+      if (res.ok) {const data = await res.json();
+
+        console.log("QUOTE DATA:", data);
+        console.log("customerEmailfrompayload:", data.customerEmail, data.payload?.customerEmail);
+        setQuoteData({
+          ...data,
+          ...(data.payload || {}),
+          customerEmail:
+            data.customerEmail ||
+            data.payload?.customerEmail ||
+            ''
+        });
         setLoading(false);
         console.log("Successfully fetched quote from API:", data);
         return;
-      } else {
+      }
+    
+       else {
         console.warn(`API fetch failed with status: ${res.status}`);
       }
     } catch (apiError) {
@@ -66,6 +77,9 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
               quotePayload.taxRate = parsed.taxRate;
               quotePayload.companySettings = parsed.companySettings;
               quotePayload.totals = parsed.totals;
+              quotePayload.customerEmail = parsed.customerEmail;
+              quotePayload.startDate = parsed.startDate;
+              quotePayload.dueDate = parsed.dueDate;
             } else if (parsed.payload && typeof parsed.payload === 'object') {
               quotePayload = {
                 ...parsed.payload, 
@@ -78,6 +92,7 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
             setQuoteData({
               id: parsed.id || id || router.query.id,
               client: parsed.client || parsed.customerName || parsed.customer || '',
+              customerEmail: parsed.customerEmail || parsed.payload?.customerEmail || '',
               notes: parsed.notes || '',
               payload: {
                 ...quotePayload,
@@ -91,6 +106,8 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
                   : Array.isArray(parsed.payload?.laborTasks)
                     ? parsed.payload.laborTasks
                     : [],
+                 
+                    
                 totals: parsed.totals || parsed.payload?.totals || {},
                 overheadPct: parsed.overheadPct ?? parsed.payload?.overheadPct,
                 profitPct: parsed.profitPct ?? parsed.payload?.profitPct,
@@ -169,24 +186,35 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
 </button>
 <button
   onClick={async () => {
+    alert('BUTTON CLICKED')
 
-    const emailData = {
+    const customerEmailData = {
       ...quoteData,
-      ...(quoteData.payload || {})
+      ...(quoteData.payload || {}),
+      customerEmail:
+  quoteData.customerEmail ||
+  quoteData.payload?.customerEmail ||
+  ''
     }
+
+    console.log('Sending customerEmaildata:', customerEmailData)
 
     const response = await fetch('/api/send-quote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(emailData)
+      body: JSON.stringify(customerEmailData)
     })
+
+    console.log('customerEmail response:', response.status)
 
     if (response.ok) {
       alert('Quote emailed successfully!')
     } else {
-      alert('Email failed.')
+      const err = await response.json()
+      console.error('Email error:', err)
+      alert('Email failed: ' + (err.error || 'Unknown error'))
     }
   }}
 >

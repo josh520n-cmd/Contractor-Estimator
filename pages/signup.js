@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 
 export default function Signup() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
 
@@ -24,7 +24,13 @@ export default function Signup() {
       <h1>Sign up</h1>
       <form onSubmit={submit}>
         <label>Name<input value={name} onChange={e => setName(e.target.value)} /></label>
-        <label>Email<input value={email} onChange={e => setEmail(e.target.value)} /></label>
+        <label>Email
+  <input
+    value={Email}
+    onChange={e => Email(e.target.value)}
+    placeholder="your@email.com"
+  />
+</label>
         <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} /></label>
         <button type="submit">Sign up</button>
       </form>
