@@ -1,76 +1,41 @@
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 
 export default function Navigation() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
-  const [subscription, setSubscription] = useState(null)
+  const router = useRouter();
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    loadUser()
-  }, [])
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
 
-  async function loadUser() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    if (!token) return
+    return () => unsubscribe();
+  }, []);
 
-    try {
-      const headers = { 'Authorization': `Bearer ${token}` }
-      const res = await fetch('/api/auth/me', { headers })
-      if (res.ok) {
-        const userData = await res.json()
-        setUser(userData)
-        
-        // Load subscription status
-        const subRes = await fetch('/api/subscriptions/status', { headers })
-        if (subRes.ok) {
-          setSubscription(await subRes.json())
-        }
-      }
-    } catch (e) {}
-  }
-
-  function logout() {
-    localStorage.removeItem('token')
-    setUser(null)
-    setSubscription(null)
-    router.push('/')
+  async function handleSignOut() {
+    await signOut(auth);
+    router.push("/login");
   }
 
   return (
-    <nav className="navbar">
-      <div className="nav-container">
-        <Link href="/" className="nav-logo">
-          📋 Contractor Estimator
-        </Link>
-        
-        <div className="nav-links">
-          {user ? (
-            <>
-              <span className="nav-user">{user.email}</span>
-              {subscription?.plan === 'free' && (
-                <span className="nav-badge free">
-                  Free ({subscription.free_estimates_used}/5)
-                </span>
-              )}
-              {subscription?.plan === 'pro' && (
-                <span className="nav-badge pro">Pro ✓</span>
-              )}
-              <Link href="/quotes" className="nav-link nav-button-border">Quotes</Link>
-              <Link href="/calendar" className="nav-link">Calendar</Link> {/* Add Calendar link */}
-              <Link href="/account" className="nav-link">Account</Link>
-              <button onClick={logout} className="nav-logout">Logout</button>
-            </>
-          ) : (
-            <>
-              <Link href="/quotes" className="nav-link nav-button-border">Quotes</Link>
-              <Link href="/login" className="nav-link nav-button-border">Sign In</Link>
-              <Link href="/signup" className="nav-link nav-button-border">Sign Up</Link>
-            </>
-          )}
+    <nav className="nav">
+      <Link href="/">📋 Contractor Estimator</Link>
+      <Link href="/quotes">Quotes</Link>
+      <Link href="/login">Sign In</Link>
+      <Link href="/signup">Sign Up</Link>
+
+      {user ? (
+        <div className="auth-status">
+          <span>Signed in as {user.email}</span>
+          <button onClick={handleSignOut}>Sign Out</button>
         </div>
-      </div>
+      ) : (
+        <span className="auth-status">Not signed in</span>
+      )}
     </nav>
-  )
+  );
 }
