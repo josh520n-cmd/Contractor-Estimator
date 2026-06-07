@@ -1,20 +1,57 @@
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import db from '../../../lib/db'
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
+export default function Login() {
+  const router = useRouter();
 
-export default function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end()
-  const { email, password } = req.body || {}
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' })
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const user = db.prepare('SELECT id,email,password,name FROM users WHERE email = ?').get(email)
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' })
+  async function submit(e) {
+    e.preventDefault();
 
-  const ok = bcrypt.compareSync(password, user.password)
-  if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-  const token = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' })
-  res.json({ id: user.id, email: user.email, name: user.name, token })
+      router.push("/");
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  return (
+    <main className="container">
+      <h1>Log In</h1>
+
+      <form onSubmit={submit}>
+        <label>
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+
+        <label>
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+
+        <button type="submit">
+          Log In
+        </button>
+      </form>
+    </main>
+  );
 }

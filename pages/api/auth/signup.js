@@ -1,23 +1,78 @@
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { v4 as uuidv4 } from 'uuid'
-import db from '../../../lib/db'
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
+export default function Signup() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-export default function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end()
-  const { email, password, name } = req.body || {}
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' })
+  async function submit(e) {
+    e.preventDefault();
 
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email)
-  if (existing) return res.status(409).json({ error: 'User exists' })
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-  const hashed = bcrypt.hashSync(password, 10)
-  const id = uuidv4()
-  const now = new Date().toISOString()
-  db.prepare('INSERT INTO users (id,email,password,name,created_at) VALUES (?,?,?,?,?)').run(id, email, hashed, name || '', now)
+      const user = userCredential.user;
 
-  const token = jwt.sign({ sub: id, email }, JWT_SECRET, { expiresIn: '30d' })
-  res.status(201).json({ id, email, name, token })
+      if (name) {
+        await updateProfile(user, { displayName: name });
+      }
+
+      await setDoc(doc(db, "users", user.uid), {
+        name,
+        email,
+        createdAt: serverTimestamp(),
+      });
+
+      router.push("/");
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  return (
+    <main className="container">
+      <h1>Create Account</h1>
+
+      <form onSubmit={submit}>
+        <label>
+          Name
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
+          />
+        </label>
+
+        <label>
+          Email
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@email.com"
+          />
+        </label>
+
+        <label>
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Create a password"
+          />
+        </label>
+
+        <button type="submit">Sign Up</button>
+      </form>
+    </main>
+  );
 }

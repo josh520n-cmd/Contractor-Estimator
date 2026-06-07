@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { db } from './firebase'
+import { db } from '../../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
 
 function formatMoney(n) {
