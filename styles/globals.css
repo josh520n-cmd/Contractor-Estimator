@@ -419,6 +419,7 @@ button {
   height: 100vh;
   background: #1e293b;
   color: white;
+  padding-top: 76px;
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
@@ -438,8 +439,8 @@ button {
 
 .sidebar-toggle {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 18px;
+  left: 140px;
   z-index: 1100;
   border: none;
   border-radius: 10px;
@@ -573,4 +574,20 @@ textarea {
   .main-grid {
     grid-template-columns: 1fr;
   }
+}
+.sidebar {
+  padding-top: 76px;
+}
+
+.sidebar-toggle {
+  position: fixed;
+  top: 18px;
+  left: 16px;
+  z-index: 1100;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
 }
