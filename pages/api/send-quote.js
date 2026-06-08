@@ -23,7 +23,6 @@ export default async function handler(req, res) {
         error: 'Customer email is missing on this quote.'
       })
     }
-
     const { data, error } = await resend.emails.send({
       from: 'Contractor Estimator <onboarding@resend.dev>',
       to: customerEmail,
@@ -31,17 +30,22 @@ export default async function handler(req, res) {
       html: `
         <h2>Your Estimate</h2>
         <p>Hello ${quote.client || 'Customer'},</p>
-        <p>Your estimate is ready.</p>
+        <p>Your estimate is attached as a PDF.</p>
         <p><b>Estimate #:</b> ${quote.estimateNumber || quote.id || ''}</p>
         <p><b>Job Address:</b> ${quote.jobAddress || ''}</p>
         <p><b>Total:</b> $${quote.totals?.grandTotal || 0}</p>
         <p>Thank you for choosing us!</p>
-      `
+      `,
+      attachments: [
+        {
+          filename: `${quote.estimateNumber || "estimate"}.pdf`,
+          content: quote.pdfBase64
+            ?.replace("data:application/pdf;filename=generated.pdf;base64,", "")
+            .replace("data:application/pdf;base64,", "")
+        }
+      ]
     })
-
-    console.log('Resend data:', data)
-    console.log('Resend error:', error)
-
+    
     if (error) {
       return res.status(400).json({ error: error.message || error })
     }

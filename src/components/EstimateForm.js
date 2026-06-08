@@ -462,16 +462,18 @@ export default function EstimateForm({ existingQuoteId = null }) {
       {editMode && <div className="edit-notice">📝 Editing existing quote</div>}
 
       <section className="card client-card">
-        <div className="header">
-          <div>
-            <p className="eyebrow">Client Information</p>
-            <h2>Estimate details</h2>
-          </div>
-          <div className="estimate-meta">
-            <span className="tag estimate-tag">{estimateNumber || 'Draft #'}</span>
-            <span className="tag status-tag">{status}</span>
-          </div>
-        </div>
+  <div className="estimate-header">
+    <h2>Estimate details</h2>
+
+    <div className="estimate-meta">
+      <span className="tag estimate-tag">
+        {estimateNumber || 'Draft #'}
+      </span>
+      <span className="tag status-tag">
+        {status}
+      </span>
+    </div>
+  </div>
 
         <div className="field-grid">
           <label>Client name<input value={client} onChange={e => setClient(e.target.value)} placeholder="Client or job name"/></label>

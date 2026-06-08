@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function formatMoney(n) { return '$' + Number(n || 0).toFixed(2) }
 
 export default function Print() {
   const [data, setData] = useState(null)
+  const printRef = useRef(null)
+const [sending, setSending] = useState(false)
 
   useEffect(() => {
     try {
@@ -31,14 +33,67 @@ dueDate,
     companySettings = {},
     taxRate = 0
   } = data
+  async function emailPdf() {
+    if (!data?.email) {
+      alert("No customer email found.")
+      return
+    }
+  
+    try {
+      setSending(true)
+  
+      const html2pdf = (await import("html2pdf.js")).default
+  
+      const worker = html2pdf()
+        .set({
+          margin: 0.5,
+          filename: `${estimateNumber || "estimate"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+        })
+        .from(printRef.current)
+        .toPdf()
+  
+      const pdfBase64 = await worker.outputPdf("datauristring")
+  
+      const res = await fetch("/api/send-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          client: data.client,
+          estimateNumber: data.estimateNumber,
+          jobAddress: data.jobAddress,
+          totals: data.totals,
+          pdfBase64,
+        }),
+      })
+  
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || "Email failed")
+      }
+  
+      alert("Quote emailed successfully.")
+    } catch (err) {
+      alert(err.message || "Email failed")
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <main className="printable">
-      <div className="print-actions">
-        <button onClick={() => window.print()}>Print / Save PDF</button>
-      </div>
-
-      <div className="print-header">
+     <div className="print-actions no-print">
+  <button onClick={() => window.print()}>Print / Save PDF</button>
+  <button onClick={emailPdf} disabled={sending}>
+    {sending ? "Sending..." : "Email PDF"}
+  </button>
+  
+</div>
+<div ref={printRef}>
+  <div className="print-header">
         {companySettings.logo_data && (
           <img src={companySettings.logo_data} alt="Logo" className="company-logo" />
         )}
@@ -175,6 +230,7 @@ dueDate,
     </div>
   </div>
 </section>
+</div>
     </main>
   )
 }

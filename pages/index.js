@@ -17,12 +17,8 @@ export default function Home() {
             <h1>Contractor Estimator</h1>
             <p>Build estimates faster with a clean contractor workflow.</p>
           </div>
-          <Link href="/quotes" className="secondary nav-action">
-            Saved Quotes
-          </Link>
-          <Link href="/calendar" className="primary nav-action">
-            Scheduler
-          </Link>
+          
+          
         </div>
         <EstimateForm />
       </main>
