@@ -1,5 +1,4 @@
 import { Resend } from 'resend'
-import { Buffer } from 'buffer';
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -33,7 +32,7 @@ export default async function handler(req, res) {
       );
       attachments.push({
         filename: `${quote.estimateNumber || "estimate"}.pdf`,
-        content: pdfBuffer,
+        content: pdfBuffer.toString("base64"),
       });
     }
 
