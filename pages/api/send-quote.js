@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { Buffer } from 'buffer';
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -23,6 +24,19 @@ export default async function handler(req, res) {
         error: 'Customer email is missing on this quote.'
       })
     }
+    
+    const attachments = [];
+    if (quote.pdfBase64) {
+      const pdfBuffer = Buffer.from(
+        quote.pdfBase64.replace(/^data:application\/pdf;base64,/, ""),
+        "base64"
+      );
+      attachments.push({
+        filename: `${quote.estimateNumber || "estimate"}.pdf`,
+        content: pdfBuffer,
+      });
+    }
+
     const { data, error } = await resend.emails.send({
       from: 'Contractor Estimator <onboarding@resend.dev>',
       to: customerEmail,
@@ -36,14 +50,7 @@ export default async function handler(req, res) {
         <p><b>Total:</b> $${quote.totals?.grandTotal || 0}</p>
         <p>Thank you for choosing us!</p>
       `,
-      attachments: [
-        {
-          filename: `${quote.estimateNumber || "estimate"}.pdf`,
-          content: quote.pdfBase64
-            ?.replace("data:application/pdf;filename=generated.pdf;base64,", "")
-            .replace("data:application/pdf;base64,", "")
-        }
-      ]
+      attachments: attachments,
     })
     
     if (error) {

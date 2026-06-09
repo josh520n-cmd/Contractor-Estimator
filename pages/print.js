@@ -5,7 +5,8 @@ function formatMoney(n) { return '$' + Number(n || 0).toFixed(2) }
 export default function Print() {
   const [data, setData] = useState(null)
   const printRef = useRef(null)
-const [sending, setSending] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [processedLogoData, setProcessedLogoData] = useState(null)
 
   useEffect(() => {
     try {
@@ -13,6 +14,43 @@ const [sending, setSending] = useState(false)
       if (raw) setData(JSON.parse(raw))
     } catch (e) {}
   }, [])
+
+  useEffect(() => {
+    if (data?.companySettings?.logo_data) {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 200; // Max width for the logo
+        const MAX_HEIGHT = 200; // Max height for the logo
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to JPEG with reduced quality
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setProcessedLogoData(compressedDataUrl);
+      };
+      img.src = data.companySettings.logo_data;
+    } else {
+      setProcessedLogoData(null);
+    }
+  }, [data?.companySettings?.logo_data]);
 
   if (!data) return <main className="container"><p>No quote found. Create an estimate first.</p></main>
 
@@ -22,7 +60,7 @@ const [sending, setSending] = useState(false)
     email,
     jobAddress,
     startDate,
-dueDate,
+    dueDate,
     estimateNumber,
     status,
     items,
@@ -33,6 +71,7 @@ dueDate,
     companySettings = {},
     taxRate = 0
   } = data
+
   async function emailPdf() {
     if (!data?.email) {
       alert("No customer email found.")
@@ -94,8 +133,8 @@ dueDate,
 </div>
 <div ref={printRef}>
   <div className="print-header">
-        {companySettings.logo_data && (
-          <img src={companySettings.logo_data} alt="Logo" className="company-logo" />
+        {processedLogoData && (
+          <img src={processedLogoData} alt="Logo" className="company-logo" />
         )}
         <div className="company-info">
           {companySettings.company_name && (
