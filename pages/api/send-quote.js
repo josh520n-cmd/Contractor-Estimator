@@ -1,47 +1,48 @@
-if (!process.env.RESEND_API_KEY) {
-  return res.status(500).json({
-    error: "RESEND_API_KEY is missing"
-  })
-}
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export default async function handler(req, res) {
-  console.log("BODY RECEIVED:", req.body);
+  if (!process.env.RESEND_API_KEY) {
+    return res.status(500).json({
+      error: 'RESEND_API_KEY is missing'
+    })
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({
+      error: 'Method not allowed'
+    })
   }
 
   try {
     const quote = req.body
+
     const customerEmail =
-    quote.email ||
-  quote.customerEmail ||
-  quote.payload?.customerEmail ||
-  ''
-    console.log('SEND QUOTE API HIT')
-    console.log('CustomerEmail:', customerEmail)
+      quote.email ||
+      quote.customerEmail ||
+      quote.payload?.customerEmail ||
+      ''
 
     if (!customerEmail) {
       return res.status(400).json({
         error: 'Customer email is missing on this quote.'
       })
     }
-    
-    const attachments = [];
+
+    const attachments = []
+
     if (quote.pdfBase64) {
-      const pdfBuffer = Buffer.from(
-        quote.pdfBase64.replace(/^data:application\/pdf;base64,/, ""),
-        "base64"
-      );
+      const cleanBase64 = quote.pdfBase64
+        .replace(/^data:application\/pdf;base64,/, '')
+        .replace(/^data:application\/pdf;filename=.*;base64,/, '')
+
       attachments.push({
-        filename: `${quote.estimateNumber || "estimate"}.pdf`,
-        content: pdfBuffer.toString("base64"),
-      });
+        filename: `${quote.estimateNumber || 'estimate'}.pdf`,
+        content: cleanBase64
+      })
     }
-    console.log("RESEND KEY EXISTS:", !!process.env.RESEND_API_KEY)
-    console.log("ATTACHMENT COUNT:", attachments.length)
+
     const { data, error } = await resend.emails.send({
       from: 'Contractor Estimator <onboarding@resend.dev>',
       to: customerEmail,
@@ -55,19 +56,24 @@ export default async function handler(req, res) {
         <p><b>Total:</b> $${quote.totals?.grandTotal || 0}</p>
         <p>Thank you for choosing us!</p>
       `,
-      attachments: attachments,
+      attachments
     })
-    
+
     if (error) {
-      return res.status(400).json({ error: error.message || error })
+      return res.status(400).json({
+        error: error.message || error
+      })
     }
 
-    return res.status(200).json({ success: true })
+    return res.status(200).json({
+      success: true,
+      data
+    })
   } catch (err) {
-    console.error("SEND QUOTE ERROR:", err)
-  
+    console.error('SEND QUOTE ERROR:', err)
+
     return res.status(500).json({
-      error: err.message,
-      stack: err.stack,
+      error: err.message || 'Send quote failed'
     })
   }
+}
