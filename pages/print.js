@@ -57,7 +57,7 @@ export default function Print() {
   const {
     client,
     phone,
-    email,
+    customerEmail,
     jobAddress,
     startDate,
     dueDate,
@@ -73,7 +73,7 @@ export default function Print() {
   } = data
 
   async function emailPdf() {
-    if (!data?.email) {
+    if (!data?.customerEmail) {
       alert("No customer email found.")
       return
     }
@@ -100,7 +100,7 @@ export default function Print() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: data.email,
+          email: data.customerEmail || data.email,
           client: data.client,
           estimateNumber: data.estimateNumber,
           jobAddress: data.jobAddress,
@@ -153,7 +153,7 @@ export default function Print() {
         <h1>Quote</h1>
         <div>Client: <strong>{client}</strong></div>
         {phone && <div>Phone: <strong>{phone}</strong></div>}
-        {email && <div>Email: <strong>{email}</strong></div>}
+        {customerEmail && <div>Email: <strong>{email}</strong></div>}
         {jobAddress && <div>Job Address: <strong>{jobAddress}</strong></div>}
         {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
         {status && <div>Status: <strong>{status}</strong></div>}
