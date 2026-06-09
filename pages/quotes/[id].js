@@ -191,37 +191,19 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
   Print / Save PDF
 </button>
 <button
-  onClick={async () => {
-    alert('BUTTON CLICKED')
-
-    const customerEmailData = {
+  onClick={() => {
+    const printData = {
       ...quoteData,
       ...(quoteData.payload || {}),
-      customerEmail:
-  quoteData.customerEmail ||
-  quoteData.payload?.customerEmail ||
-  ''
     }
 
-    console.log('Sending customerEmaildata:', customerEmailData)
-
-    const response = await fetch('/api/send-quote', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(customerEmailData)
-    })
-
-    console.log('customerEmail response:', response.status)
-
-    if (response.ok) {
-      alert('Quote emailed successfully!')
-    } else {
-      const err = await response.json()
-      console.error('Email error:', err)
-      alert('Email failed: ' + (err.error || 'Unknown error'))
+    if (printData.companySettings?.logo_data) {
+      printData.companySettings = { ...printData.companySettings }
+      delete printData.companySettings.logo_data
     }
+
+    localStorage.setItem('latestEstimate', JSON.stringify(printData))
+    router.push('/print')
   }}
 >
   Email Quote
