@@ -313,6 +313,8 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   async function saveQuote() {
     console.log('customerEmail before save:', customerEmail)
+    const safeCompanySettings = { ...(companySettings || {}) }
+delete safeCompanySettings.logo_data
     const payload = {
       phone,
       customerEmail,
@@ -327,7 +329,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
       profitPct,
       wastePct,
       taxRate,
-      companySettings,
+      companySettings: safeCompanySettings,
       totals: {
         materialTotal,
         wasteAmount,
