@@ -6,7 +6,6 @@ export default function Print() {
   const [data, setData] = useState(null)
   const printRef = useRef(null)
   const [sending, setSending] = useState(false)
-  const [processedLogoData, setProcessedLogoData] = useState(null)
 
   useEffect(() => {
     try {
@@ -14,43 +13,6 @@ export default function Print() {
       if (raw) setData(JSON.parse(raw))
     } catch (e) {}
   }, [])
-
-  useEffect(() => {
-    if (data?.companySettings?.logo_data) {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 200; // Max width for the logo
-        const MAX_HEIGHT = 200; // Max height for the logo
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Convert to JPEG with reduced quality
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        setProcessedLogoData(compressedDataUrl);
-      };
-      img.src = data.companySettings.logo_data;
-    } else {
-      setProcessedLogoData(null);
-    }
-  }, [data?.companySettings?.logo_data]);
 
   if (!data) return <main className="container"><p>No quote found. Create an estimate first.</p></main>
 
@@ -83,6 +45,47 @@ export default function Print() {
   
       const html2pdf = (await import("html2pdf.js")).default
   
+      let originalLogoSrc = null;
+      const logoElement = printRef.current.querySelector('.company-logo');
+
+      if (companySettings.logo_data && logoElement) {
+        originalLogoSrc = logoElement.src;
+        
+        const img = new Image();
+        img.src = companySettings.logo_data;
+        await new Promise(resolve => {
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 200; // Max width for the logo
+            const MAX_HEIGHT = 200; // Max height for the logo
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress to JPEG, 70% quality
+            logoElement.src = compressedDataUrl; // Temporarily set compressed logo for PDF generation
+            resolve();
+          };
+          img.onerror = () => resolve(); // Resolve even if image fails to load
+        });
+      }
+
       const worker = html2pdf()
         .set({
           margin: 0.5,
@@ -96,6 +99,11 @@ export default function Print() {
   
       const pdfBase64 = await worker.outputPdf("datauristring")
   
+      // Revert logo src to original after PDF generation
+      if (logoElement && originalLogoSrc) {
+        logoElement.src = originalLogoSrc;
+      }
+
       const res = await fetch("/api/send-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -133,8 +141,8 @@ export default function Print() {
 </div>
 <div ref={printRef}>
   <div className="print-header">
-        {processedLogoData && (
-          <img src={processedLogoData} alt="Logo" className="company-logo" />
+        {companySettings.logo_data && (
+          <img src={companySettings.logo_data} alt="Logo" className="company-logo" />
         )}
         <div className="company-info">
           {companySettings.company_name && (
