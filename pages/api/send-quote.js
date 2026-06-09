@@ -1,3 +1,8 @@
+if (!process.env.RESEND_API_KEY) {
+  return res.status(500).json({
+    error: "RESEND_API_KEY is missing"
+  })
+}
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -35,7 +40,8 @@ export default async function handler(req, res) {
         content: pdfBuffer.toString("base64"),
       });
     }
-
+    console.log("RESEND KEY EXISTS:", !!process.env.RESEND_API_KEY)
+    console.log("ATTACHMENT COUNT:", attachments.length)
     const { data, error } = await resend.emails.send({
       from: 'Contractor Estimator <onboarding@resend.dev>',
       to: customerEmail,
@@ -58,7 +64,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ success: true })
   } catch (err) {
-    console.error(err)
-    return res.status(500).json({ error: err.message })
+    console.error("SEND QUOTE ERROR:", err)
+  
+    return res.status(500).json({
+      error: err.message,
+      stack: err.stack,
+    })
   }
-}
