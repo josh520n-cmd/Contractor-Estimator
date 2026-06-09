@@ -153,7 +153,7 @@ export default function Print() {
         <h1>Quote</h1>
         <div>Client: <strong>{client}</strong></div>
         {phone && <div>Phone: <strong>{phone}</strong></div>}
-        {customerEmail && <div>Email: <strong>{email}</strong></div>}
+        {customerEmail && <div>Email: <strong>{customerEmail}</strong></div>}
         {jobAddress && <div>Job Address: <strong>{jobAddress}</strong></div>}
         {estimateNumber && <div>Estimate #: <strong>{estimateNumber}</strong></div>}
         {status && <div>Status: <strong>{status}</strong></div>}
