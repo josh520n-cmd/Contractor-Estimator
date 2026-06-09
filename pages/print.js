@@ -110,8 +110,18 @@ export default function Print() {
       })
   
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || "Email failed")
+        const text = await res.text()
+
+        let message = "Email failed"
+        
+        try {
+          const err = JSON.parse(text)
+          message = err.error || message
+        } catch {
+          message = text || message
+        }
+        
+        throw new Error(message)
       }
   
       alert("Quote emailed successfully.")

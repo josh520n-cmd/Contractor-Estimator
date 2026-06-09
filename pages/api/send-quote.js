@@ -1,7 +1,13 @@
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+}
 export default async function handler(req, res) {
   if (!process.env.RESEND_API_KEY) {
     return res.status(500).json({
