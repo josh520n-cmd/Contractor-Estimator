@@ -176,6 +176,17 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
     const printData = {
       ...quoteData,
       ...(quoteData.payload || {}),
+      id: quoteData.id || id,
+      quoteId: quoteData.id || id,
+      estimateNumber:
+        quoteData.estimateNumber ||
+        quoteData.payload?.estimateNumber ||
+        quoteData.id ||
+        id,
+      jobAddress:
+        quoteData.jobAddress ||
+        quoteData.payload?.jobAddress ||
+        '',
     }
 
     // Remove logo_data before saving to localStorage to prevent quota exceeded errors
