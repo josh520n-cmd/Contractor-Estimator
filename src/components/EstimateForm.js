@@ -125,6 +125,10 @@ export default function EstimateForm({ existingQuoteId = null }) {
     const data = await res.json()
     const payload = data.payload || {}
     
+    setPhone(data.phone || payload.phone || '')
+    setCustomerEmail(data.customerEmail || payload.customerEmail || '')
+    setJobAddress(data.jobAddress || payload.jobAddress || '')
+    setStatus(data.status || payload.status || 'Draft')
     setClient(data.client || '')
     setEstimateNumber(payload.estimateNumber || data.estimateNumber || '')
     setNotes(data.notes || '')
@@ -133,8 +137,8 @@ export default function EstimateForm({ existingQuoteId = null }) {
     setOverheadPct(payload.overheadPct || 10)
     setProfitPct(payload.profitPct || 10)
     setWastePct(payload.wastePct || 5)
-    setStartDate(data.startDate || '')
-    setDueDate(data.dueDate || '')
+    setStartDate(data.startDate || payload.startDate || '')
+    setDueDate(data.dueDate || payload.dueDate || '')
     setEditMode(true)
   }
 
