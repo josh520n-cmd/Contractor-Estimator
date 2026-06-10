@@ -164,6 +164,11 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
         <div>
           <h1>Quote #{quoteData.id ? String(quoteData.id).substring(0, 6) : "N/A"}</h1>
           <p>Client: {quoteData.client || "N/A"}</p>
+          {(quoteData.jobAddress || quoteData.payload?.jobAddress) && (
+  <p>
+    Job Address: {quoteData.jobAddress || quoteData.payload?.jobAddress}
+  </p>
+)}
           {quoteData.startDate && <p>Start Date: {new Date(quoteData.startDate).toLocaleDateString()}</p>}
           {quoteData.dueDate && <p>Due Date: {new Date(quoteData.dueDate).toLocaleDateString()}</p>}
         </div>
