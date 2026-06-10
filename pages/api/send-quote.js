@@ -23,6 +23,8 @@ export default async function handler(req, res) {
 
   try {
     const quote = req.body
+    const estimateNumber = quote.estimateNumber || quote.id || quote.quoteId || ''
+const jobAddress = quote.jobAddress || quote.address || ''
 
     const customerEmail =
       quote.email ||
@@ -44,7 +46,7 @@ export default async function handler(req, res) {
         .replace(/^data:application\/pdf;filename=.*;base64,/, '')
 
       attachments.push({
-        filename: `${quote.estimateNumber || 'estimate'}.pdf`,
+        filename: `${estimateNumber || 'estimate'}.pdf`,
         content: cleanBase64
       })
     }
@@ -57,8 +59,8 @@ export default async function handler(req, res) {
         <h2>Your Estimate</h2>
         <p>Hello ${quote.client || 'Customer'},</p>
         <p>Your estimate is attached as a PDF.</p>
-        <p><b>Estimate #:</b> ${quote.estimateNumber || quote.id || ''}</p>
-        <p><b>Job Address:</b> ${quote.jobAddress || ''}</p>
+       <p><b>Estimate #:</b> ${estimateNumber}</p>
+<p><b>Job Address:</b> ${jobAddress}</p>
         <p><b>Total:</b> $${quote.totals?.grandTotal || 0}</p>
         <p>Thank you for choosing us!</p>
       `,
