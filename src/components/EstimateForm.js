@@ -367,6 +367,9 @@ delete safeCompanySettings.logo_data
     try {
       const createdAt = new Date().toISOString()
   
+      console.log("JOB ADDRESS BEFORE FIRESTORE:", payload.jobAddress)
+console.log("PAYLOAD BEFORE FIRESTORE:", payload)
+
       const docRef = await addDoc(collection(db, 'quotes'), {
         ...payload,
         createdAt
