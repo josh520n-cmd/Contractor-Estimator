@@ -372,14 +372,14 @@ console.log("PAYLOAD BEFORE FIRESTORE:", payload)
 
 const docRef = await addDoc(collection(db, 'quotes'), {
   ...payload,
-  jobAddress: payload.jobAddress || jobAddress || '',
+  jobAddress: jobAddress || payload.jobAddress || '',
   createdAt
 })
   
       const id = docRef.id
       const quoteDataToSave = {
         ...payload,
-        jobAddress: payload.jobAddress || jobAddress || '',
+        jobAddress: jobAddress || payload.jobAddress || '',
         id,
         createdAt
       }
