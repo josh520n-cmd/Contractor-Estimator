@@ -102,8 +102,18 @@ export default function Print() {
         body: JSON.stringify({
           email: data.customerEmail || data.email,
           client: data.client,
-          estimateNumber: data.estimateNumber,
-          jobAddress: data.jobAddress,
+          estimateNumber:
+            data.estimateNumber ||
+            data.estimateId ||
+            data.id ||
+            data.quoteId ||
+            '',
+          jobAddress:
+            data.jobAddress ||
+            data.address ||
+            data.customerAddress ||
+            data.projectAddress ||
+            '',
           totals: data.totals,
           pdfBase64,
         }),
