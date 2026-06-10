@@ -224,6 +224,14 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
 >
   Email Quote
 </button>
+<button
+  onClick={() => {
+    localStorage.setItem('editQuote', JSON.stringify(quoteData))
+    router.push(`/edit/${quoteData.id || id}`)
+  }}
+>
+  Edit Quote
+</button>
       </div>
   
       <section>
