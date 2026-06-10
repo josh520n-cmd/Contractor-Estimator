@@ -105,23 +105,20 @@ export default function QuotesListPage() {
   }
 
   async function deleteQuote(id) {
-    if (!window.confirm('Delete this quote? This action cannot be undone.')) return
-    setProcessing(id)
-    try {
-      const res = await fetch(`/api/quotes/${id}`, { method: 'DELETE', headers })
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error || 'Delete failed')
-      }
-      await loadQuotes()
-    } catch (err) {
-      console.error(err)
-      setError('Unable to delete quote. Please try again.')
-    } finally {
-      setProcessing(null)
+    if (!confirm('Delete this quote?')) return
+  
+    const res = await fetch(`/api/quotes/${id}`, {
+      method: 'DELETE'
+    })
+  
+    if (!res.ok) {
+      const err = await res.json()
+      alert(err.error || 'Delete failed')
+      return
     }
+  
+    setQuotes(prev => prev.filter(q => q.id !== id))
   }
-
   async function toggleArchive(id, currentStatus) {
     setProcessing(id)
     try {
