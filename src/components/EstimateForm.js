@@ -370,13 +370,21 @@ delete safeCompanySettings.logo_data
       console.log("JOB ADDRESS BEFORE FIRESTORE:", payload.jobAddress)
 console.log("PAYLOAD BEFORE FIRESTORE:", payload)
 
-      const docRef = await addDoc(collection(db, 'quotes'), {
-        ...payload,
-        createdAt
-      })
+const docRef = await addDoc(collection(db, 'quotes'), {
+  ...payload,
+  jobAddress: payload.jobAddress || jobAddress || '',
+  createdAt
+})
   
       const id = docRef.id
-      const quoteDataToSave = { ...payload, id, createdAt }
+      const quoteDataToSave = {
+        ...payload,
+        jobAddress: payload.jobAddress || jobAddress || '',
+        id,
+        createdAt
+      }
+  
+      console.log("QUOTE DATA TO SAVE:", quoteDataToSave)
   
       localStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
       localStorage.setItem('quotes_' + id, JSON.stringify(quoteDataToSave))
