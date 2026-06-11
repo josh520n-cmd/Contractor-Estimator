@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 function formatDate(value) {
   try {
@@ -15,6 +16,7 @@ function formatMoney(value) {
 
 export default function QuotesListPage() {
   const [quotes, setQuotes] = useState(null)
+  const router = useRouter()
   const [localQuotes, setLocalQuotes] = useState([])
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
