@@ -158,14 +158,31 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   async function loadCompanySettings() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = {}
-    if (token) headers['Authorization'] = `Bearer ${token}`
+  
+    if (!token) {
+      console.log('No token found for estimate company settings')
+      return
+    }
+  
+    const headers = {
+      Authorization: `Bearer ${token}`
+    }
+  
     try {
       const res = await fetch('/api/settings/company', { headers })
+  
       if (res.ok) {
         const data = await res.json()
         console.log('ESTIMATE FORM COMPANY SETTINGS:', data)
-        setCompanySettings(data)
+  
+        setCompanySettings({
+          logo_data: data.logo_data || null,
+          tax_rate: data.tax_rate ?? 0,
+          company_name: data.company_name || '',
+          company_address: data.company_address || '',
+          company_phone: data.company_phone || ''
+        })
+  
         setTaxRate(data.tax_rate ?? 0)
       }
     } catch (e) {
@@ -636,37 +653,6 @@ const docRef = await addDoc(collection(db, 'quotes'), {
         </aside>
       </div>
 
-      <details className="collapsible-card">
-        <summary>Company Settings</summary>
-        <div className="collapsible-body">
-          <section className="company-settings">
-            <div>
-              <label>Company Name
-                <input value={companySettings.company_name} onChange={e => setCompanySettings({ ...companySettings, company_name: e.target.value })} />
-              </label>
-              <label>Address
-                <input value={companySettings.company_address} onChange={e => setCompanySettings({ ...companySettings, company_address: e.target.value })} />
-              </label>
-              <label>Phone
-                <input value={companySettings.company_phone} onChange={e => setCompanySettings({ ...companySettings, company_phone: e.target.value })} />
-              </label>
-              <label>
-  Tax %
-  <input
-    type="number"
-    value={taxRate}
-    onChange={(e) => setTaxRate(e.target.value)}
-  />
-</label>
-              <label>Company Logo
-                <input type="file" accept="image/*" onChange={handleLogoUpload} />
-              </label>
-              {companySettings.logo_data && <div className="logo-preview">✓ Logo uploaded</div>}
-            </div>
-            <button type="button" className="primary" onClick={saveCompanySettings}>Save Settings</button>
-          </section>
-        </div>
-      </details>
 
       <details className="collapsible-card">
         <summary>Material Presets</summary>

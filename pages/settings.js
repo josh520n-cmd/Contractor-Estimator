@@ -10,35 +10,43 @@ export default function Settings() {
   })
 
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadSettings() {
-      const token = localStorage.getItem('token')
-
-      const res = await fetch('/api/settings/company', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
-      const data = await res.json()
-      console.log('LOADED COMPANY SETTINGS:', data)
-
-      setSettings({
-        logo_data: data.logo_data || null,
-        tax_rate: data.tax_rate ?? 0,
-        company_name: data.company_name || '',
-        company_address: data.company_address || '',
-        company_phone: data.company_phone || ''
-      })
-    }
-
     loadSettings()
   }, [])
 
+  async function loadSettings() {
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      console.log('No token found for company settings')
+      setLoading(false)
+      return
+    }
+
+    const res = await fetch('/api/settings/company', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const data = await res.json()
+    console.log('LOADED COMPANY SETTINGS:', data)
+
+    setSettings({
+      logo_data: data.logo_data || null,
+      tax_rate: data.tax_rate ?? 0,
+      company_name: data.company_name || '',
+      company_address: data.company_address || '',
+      company_phone: data.company_phone || ''
+    })
+
+    setLoading(false)
+  }
+
   function handleChange(e) {
     const { name, value } = e.target
-
     setSettings(prev => ({
       ...prev,
       [name]: value
@@ -52,7 +60,7 @@ export default function Settings() {
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg']
 
     if (!allowedTypes.includes(file.type)) {
-      alert('Invalid file type. Please upload a PNG, JPG, or JPEG logo.')
+      alert('Invalid file type. Please upload PNG, JPG, or JPEG.')
       return
     }
 
@@ -62,14 +70,12 @@ export default function Settings() {
     }
 
     const reader = new FileReader()
-
     reader.onload = () => {
       setSettings(prev => ({
         ...prev,
         logo_data: reader.result
       }))
     }
-
     reader.readAsDataURL(file)
   }
 
@@ -81,30 +87,52 @@ export default function Settings() {
   }
 
   async function saveSettings() {
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      alert('You must be signed in to save settings.')
+      return
+    }
+
     setSaving(true)
 
     try {
       const res = await fetch('/api/settings/company', {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-        body: JSON.stringify(settings)
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...settings,
+          tax_rate: Number(settings.tax_rate || 0)
+        })
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        const data = await res.json()
         alert(data.error || 'Settings failed to save')
         return
       }
 
       alert('Company settings saved')
+      await loadSettings()
     } catch (err) {
       alert(err.message || 'Settings failed to save')
     } finally {
       setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <main className="container">
+        <section className="card">
+          <h1>Loading company settings...</h1>
+        </section>
+      </main>
+    )
   }
 
   return (
@@ -118,16 +146,13 @@ export default function Settings() {
 
         <div style={{ marginTop: 24 }}>
           <h2>Company Logo</h2>
-
           <p style={{ color: '#64748b', marginBottom: 12 }}>
             Recommended: square PNG or JPG logo. Maximum file size: 500 KB.
-            Supported file types: PNG, JPG, JPEG. Large logos may affect PDF
-            generation and email delivery.
+            Supported file types: PNG, JPG, JPEG.
           </p>
 
           {settings.logo_data && (
             <div style={{ marginBottom: 16 }}>
-              <p>Current Logo:</p>
               <img
                 src={settings.logo_data}
                 alt="Company Logo"
