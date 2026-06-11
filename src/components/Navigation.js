@@ -33,6 +33,7 @@ export default function Navigation() {
             <Link href="/">New Estimate</Link>
             <Link href="/quotes">Saved Quotes</Link>
             <Link href="/calendar">Scheduler</Link>
+            <Link href="/settings">Company Settings</Link>
           </div>
         </div>
 

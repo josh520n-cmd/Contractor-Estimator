@@ -54,11 +54,11 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   // Company settings
   const [companySettings, setCompanySettings] = useState({
-    logo_data: null,
+    
     tax_rate: 0,
-    company_name: '',
-    company_address: '',
-    company_phone: ''
+  
+  
+
   })
 
   // Templates
@@ -605,6 +605,14 @@ const docRef = await addDoc(collection(db, 'quotes'), {
       onChange={(e) => setProfitPct(e.target.value)}
     />
   </label>
+  <label>
+  Tax %
+  <input
+    type="number"
+    value={taxRate}
+    onChange={(e) => setTaxRate(e.target.value)}
+  />
+</label>
 </div>
             </div>
           </section>
@@ -641,9 +649,14 @@ const docRef = await addDoc(collection(db, 'quotes'), {
               <label>Phone
                 <input value={companySettings.company_phone} onChange={e => setCompanySettings({ ...companySettings, company_phone: e.target.value })} />
               </label>
-              <label>Tax Rate (%)
-                <input type="number" step="0.1" value={taxRate} onChange={e => setTaxRate(e.target.value)} />
-              </label>
+              <label>
+  Tax %
+  <input
+    type="number"
+    value={taxRate}
+    onChange={(e) => setTaxRate(e.target.value)}
+  />
+</label>
               <label>Company Logo
                 <input type="file" accept="image/*" onChange={handleLogoUpload} />
               </label>
