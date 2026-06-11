@@ -105,15 +105,21 @@ export default function QuotesListPage() {
   }
 
   async function deleteQuote(id) {
-    if (!confirm('Delete this quote?')) return
+    console.log("DELETE ID:", id)
+  
+    if (!confirm("Delete this quote?")) return
   
     const res = await fetch(`/api/quotes/${id}`, {
-      method: 'DELETE'
+      method: "DELETE"
     })
   
+    console.log("DELETE STATUS:", res.status)
+  
+    const result = await res.text()
+    console.log("DELETE RESPONSE:", result)
+  
     if (!res.ok) {
-      const err = await res.json()
-      alert(err.error || 'Delete failed')
+      alert("Delete failed")
       return
     }
   
