@@ -165,15 +165,19 @@ export default function QuotesListPage() {
   
     console.log("DELETE STATUS:", res.status)
   
-    const result = await res.text()
-    console.log("DELETE RESPONSE:", result)
-  
-    if (!res.ok) {
-      const err = await res.json()
-      alert(err.error || 'Delete failed')
-      return
-    }
-    
+    const result = await res.json()
+console.log("DELETE RESPONSE:", result)
+
+if (!res.ok) {
+  alert(result.error || 'Delete failed')
+  return
+}
+    localStorage.removeItem('quotes_' + id)
+
+const latest = localStorage.getItem('latestEstimate')
+if (latest && latest.includes(id)) {
+  localStorage.removeItem('latestEstimate')
+}
     setQuotes(prev => prev.filter(q => q.id !== id))
     await loadQuotes()
   }
