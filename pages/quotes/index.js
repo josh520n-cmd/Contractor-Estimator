@@ -87,6 +87,24 @@ export default function QuotesListPage() {
     })
   }, [quotes, localQuotes, search])
 
+  async function downloadBackup() {
+    const res = await fetch('/api/backup')
+    const data = await res.json()
+  
+    const blob = new Blob(
+      [JSON.stringify(data, null, 2)],
+      { type: 'application/json' }
+    )
+  
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `contractor-estimator-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+  
+    URL.revokeObjectURL(url)
+  }
+
   async function duplicateQuote(id) {
     setProcessing(id)
     try {
@@ -159,6 +177,9 @@ export default function QuotesListPage() {
         <Link href="/" className="primary">
           Create New Estimate
         </Link>
+        <button onClick={downloadBackup} className="secondary">
+  Download Backup
+</button>
       </div>
 
       <div className="search-panel">
