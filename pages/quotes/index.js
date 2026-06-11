@@ -180,8 +180,8 @@ const latest = localStorage.getItem('latestEstimate')
 if (latest && latest.includes(id)) {
   localStorage.removeItem('latestEstimate')
 }
-    setQuotes(prev => prev.filter(q => q.id !== id))
-    const router = useRouter()
+setQuotes(prev => prev.filter(q => q.id !== id))
+router.reload()
   }
   async function toggleArchive(id, currentStatus) {
     setProcessing(id)
