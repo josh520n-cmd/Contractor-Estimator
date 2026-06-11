@@ -119,11 +119,13 @@ export default function QuotesListPage() {
     console.log("DELETE RESPONSE:", result)
   
     if (!res.ok) {
-      alert("Delete failed")
+      const err = await res.json()
+      alert(err.error || 'Delete failed')
       return
     }
-  
+    
     setQuotes(prev => prev.filter(q => q.id !== id))
+    await loadQuotes()
   }
   async function toggleArchive(id, currentStatus) {
     setProcessing(id)
