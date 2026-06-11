@@ -165,7 +165,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
       if (res.ok) {
         const data = await res.json()
         setCompanySettings(data)
-        setTaxRate(data.tax_rate || 0)
+        setTaxRate(data.tax_rate ?? 0)
       }
     } catch (e) {
       console.log('Failed to load company settings:', e.message)

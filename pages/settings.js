@@ -13,18 +13,20 @@ export default function Settings() {
 
   useEffect(() => {
     async function loadSettings() {
-      
+      const token = localStorage.getItem('token')
+
       const res = await fetch('/api/settings/company', {
-      
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         }
       })
-const data = await res.json()
+
+      const data = await res.json()
+      console.log('LOADED COMPANY SETTINGS:', data)
 
       setSettings({
         logo_data: data.logo_data || null,
-        tax_rate: data.tax_rate || 0,
+        tax_rate: data.tax_rate ?? 0,
         company_name: data.company_name || '',
         company_address: data.company_address || '',
         company_phone: data.company_phone || ''
