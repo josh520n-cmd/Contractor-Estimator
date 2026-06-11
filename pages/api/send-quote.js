@@ -52,7 +52,7 @@ const jobAddress = quote.jobAddress || quote.address || ''
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Contractor Estimator <onboarding@resend.dev>',
+      from: 'Contractor Estimator <quotes@constructionestimator.xyz>',
       to: customerEmail,
       subject: `Estimate ${quote.estimateNumber || quote.id || ''}`,
       html: `
