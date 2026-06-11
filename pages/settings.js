@@ -13,8 +13,14 @@ export default function Settings() {
 
   useEffect(() => {
     async function loadSettings() {
-      const res = await fetch('/api/settings/company')
-      const data = await res.json()
+      
+      const res = await fetch('/api/settings/company', {
+      
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+const data = await res.json()
 
       setSettings({
         logo_data: data.logo_data || null,
@@ -79,8 +85,9 @@ export default function Settings() {
       const res = await fetch('/api/settings/company', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
-        },
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
         body: JSON.stringify(settings)
       })
 
