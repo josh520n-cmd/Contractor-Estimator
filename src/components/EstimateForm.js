@@ -164,6 +164,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
       const res = await fetch('/api/settings/company', { headers })
       if (res.ok) {
         const data = await res.json()
+        console.log('ESTIMATE FORM COMPANY SETTINGS:', data)
         setCompanySettings(data)
         setTaxRate(data.tax_rate ?? 0)
       }
