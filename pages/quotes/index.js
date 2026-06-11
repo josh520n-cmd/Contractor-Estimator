@@ -105,6 +105,38 @@ export default function QuotesListPage() {
     URL.revokeObjectURL(url)
   }
 
+  async function restoreBackup(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+  
+    if (!confirm('Restore this backup? Existing quotes with the same ID may be overwritten.')) {
+      return
+    }
+  
+    try {
+      const text = await file.text()
+      const backup = JSON.parse(text)
+  
+      const res = await fetch('/api/restore-backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backup),
+      })
+  
+      const result = await res.json()
+  
+      if (!res.ok) {
+        alert(result.error || 'Restore failed')
+        return
+      }
+  
+      alert(`Backup restored. Quotes restored: ${result.restored}`)
+      await loadQuotes()
+    } catch (err) {
+      alert(err.message || 'Restore failed')
+    }
+  }
+
   async function duplicateQuote(id) {
     setProcessing(id)
     try {
@@ -180,6 +212,15 @@ export default function QuotesListPage() {
         <button onClick={downloadBackup} className="secondary">
   Download Backup
 </button>
+<label className="secondary" style={{ display: 'inline-block', padding: '10px 14px', cursor: 'pointer' }}>
+  Restore Backup
+  <input
+    type="file"
+    accept=".json,application/json"
+    onChange={restoreBackup}
+    style={{ display: 'none' }}
+  />
+</label>
       </div>
 
       <div className="search-panel">
