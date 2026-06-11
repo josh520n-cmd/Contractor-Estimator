@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { auth } from '../lib/firebase'
 
 function formatMoney(n) { return '$' + Number(n || 0).toFixed(2) }
 
@@ -101,6 +102,7 @@ export default function Print() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: data.customerEmail || data.email,
+          contractorEmail: auth.currentUser?.email || '',
           client: data.client,
           estimateNumber:
             data.estimateNumber ||

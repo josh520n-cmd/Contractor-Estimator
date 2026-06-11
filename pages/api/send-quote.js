@@ -32,6 +32,7 @@ const jobAddress = quote.jobAddress || quote.address || ''
       quote.payload?.customerEmail ||
       ''
 
+      
     if (!customerEmail) {
       return res.status(400).json({
         error: 'Customer email is missing on this quote.'
@@ -50,10 +51,15 @@ const jobAddress = quote.jobAddress || quote.address || ''
         content: cleanBase64
       })
     }
-
+    const contractorEmail =
+    quote.contractorEmail ||
+    quote.companyEmail ||
+    quote.userEmail ||
+    quote.email ||
+    'josh520n@gmail.com'
     const { data, error } = await resend.emails.send({
       from: 'Contractor Estimator <quotes@constructionestimator.xyz>',
-      replyTo: 'josh520n@gmail.com',
+      replyTo: contractorEmail,
       to: customerEmail,
       subject: `Estimate ${quote.estimateNumber || quote.id || ''}`,
       html: `
