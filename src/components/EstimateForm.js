@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { db } from '../../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import { auth } from '../../lib/firebase'
+import { onAuthStateChanged } from 'firebase/auth'
 
 function formatMoney(n) {
   return '$' + Number(n || 0).toFixed(2)
@@ -67,14 +68,23 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   // Load existing quote if editMode
   useEffect(() => {
-    if (existingQuoteId && router.isReady) {
-      loadQuote(existingQuoteId)
-    }
-    loadMaterialPresets()
-    loadCompanySettings()
-    loadTemplates()
+    if (!router.isReady) return
+  
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (existingQuoteId) {
+        await loadQuote(existingQuoteId)
+      }
+  
+      if (user) {
+        await loadCompanySettings(user)
+      }
+  
+      loadMaterialPresets()
+      loadTemplates()
+    })
+  
+    return () => unsub()
   }, [existingQuoteId, router.isReady])
-
   useEffect(() => {
     if (existingQuoteId || !router.isReady) return
 
@@ -157,20 +167,20 @@ export default function EstimateForm({ existingQuoteId = null }) {
     }
   }
 
-  async function loadCompanySettings() {
-    const token = await auth.currentUser?.getIdToken()
-  
-    if (!token) {
-      console.log('No token found for estimate company settings')
+  async function loadCompanySettings(user = auth.currentUser) {
+    if (!user) {
+      console.log('No Firebase user found for estimate company settings')
       return
     }
   
-    const headers = {
-      Authorization: `Bearer ${token}`
-    }
+    const token = await user.getIdToken()
   
     try {
-      const res = await fetch('/api/settings/company', { headers })
+      const res = await fetch('/api/settings/company', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
   
       if (res.ok) {
         const data = await res.json()
@@ -184,7 +194,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
           company_phone: data.company_phone || ''
         })
   
-        setTaxRate(data.tax_rate ?? 0)
+        setTaxRate(Number(data.tax_rate ?? 0))
       }
     } catch (e) {
       console.log('Failed to load company settings:', e.message)
