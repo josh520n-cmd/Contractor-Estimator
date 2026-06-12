@@ -5,7 +5,7 @@ import { auth } from '../lib/firebase'
 export default function Settings() {
   const [settings, setSettings] = useState({
     logo_data: null,
-    tax_rate: String(data.tax_rate ?? 0),
+    tax_rate: '0',
     company_name: '',
     company_address: '',
     company_phone: ''
