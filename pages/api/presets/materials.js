@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid'
 import db from '../../../lib/db'
 const { verifyAuth } = require('../../../lib/auth')
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const auth = verifyAuth(req)
+      const auth = await verifyAuth(req)
       const user_id = auth ? auth.sub : null
       
       const rows = user_id
@@ -16,7 +16,7 @@ export default function handler(req, res) {
     } catch (e) {
       // Fall back to localStorage
       const storage = require('../../../lib/storage')
-      const auth = verifyAuth(req)
+      const auth = await verifyAuth(req)
       const user_id = auth ? auth.sub : null
       const presets = user_id ? storage.getUserMaterialPresets(user_id) : storage.getAllMaterialPresets()
       return res.json(presets || [])
@@ -27,7 +27,7 @@ export default function handler(req, res) {
     const payload = req.body || {}
     const id = uuidv4()
     const now = new Date().toISOString()
-    const auth = verifyAuth(req)
+    const auth = await verifyAuth(req)
     const user_id = auth ? auth.sub : null
     const name = payload.name || 'Material'
     const description = payload.description || ''

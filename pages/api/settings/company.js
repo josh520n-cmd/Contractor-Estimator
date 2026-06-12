@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from 'uuid'
 import db from '../../../lib/db'
 const { verifyAuth } = require('../../../lib/auth')
 
-export default function handler(req, res) {
-  const auth = verifyAuth(req)
+export default async function handler(req, res) {
+  const auth = await verifyAuth(req)
   const user_id = auth ? auth.sub : null
   
   if (!user_id) {

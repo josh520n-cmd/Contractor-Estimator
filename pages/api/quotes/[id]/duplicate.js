@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import db from '../../../../lib/db'
 const { verifyAuth } = require('../../../../lib/auth')
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   const { id } = req.query
 
   if (req.method === 'POST') {
@@ -11,7 +11,7 @@ export default function handler(req, res) {
 
     const newId = uuidv4()
     const now = new Date().toISOString()
-    const auth = verifyAuth(req)
+    const auth = await verifyAuth(req)
     const user_id = auth ? auth.sub : row.user_id
     
     // Create a copy with modified client name
