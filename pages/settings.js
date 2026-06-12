@@ -45,10 +45,13 @@ export default function Settings() {
 
     const data = await res.json()
     console.log('LOADED COMPANY SETTINGS:', data)
-
+    const fixedTaxRate =
+    data.tax_rate === undefined || data.tax_rate === null || data.tax_rate === ''
+      ? '0'
+      : String(data.tax_rate)
     setSettings({
       logo_data: data.logo_data || null,
-      tax_rate: data.tax_rate ?? 0,
+      tax_rate: fixedTaxRate,
       company_name: data.company_name || '',
       company_address: data.company_address || '',
       company_phone: data.company_phone || ''
