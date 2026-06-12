@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { db } from '../../lib/firebase'
+import { db, auth } from '../../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
-import { auth } from '../../lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
-
 function formatMoney(n) {
   return '$' + Number(n || 0).toFixed(2)
 }
