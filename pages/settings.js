@@ -5,7 +5,7 @@ import { auth } from '../lib/firebase'
 export default function Settings() {
   const [settings, setSettings] = useState({
     logo_data: null,
-    tax_rate: 0,
+    tax_rate: String(data.tax_rate ?? 0),
     company_name: '',
     company_address: '',
     company_phone: ''
@@ -237,7 +237,7 @@ export default function Settings() {
               name="tax_rate"
               type="number"
               step="0.01"
-              value={settings.tax_rate}
+              value={settings.tax_rate ?? ''}
               onChange={handleChange}
               placeholder="0"
             />
