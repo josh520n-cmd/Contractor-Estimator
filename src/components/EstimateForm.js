@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { db } from '../../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
+import { auth } from '../../lib/firebase'
 
 function formatMoney(n) {
   return '$' + Number(n || 0).toFixed(2)
@@ -157,7 +158,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
   }
 
   async function loadCompanySettings() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const token = await auth.currentUser?.getIdToken()
   
     if (!token) {
       console.log('No token found for estimate company settings')

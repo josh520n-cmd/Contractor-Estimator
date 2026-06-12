@@ -1,4 +1,4 @@
-import { auth } from '../lib/firebase'
+import { auth } from '../../lib/firebase'
 import { useEffect, useState } from 'react'
 
 export default function Settings() {
@@ -18,7 +18,7 @@ export default function Settings() {
   }, [])
 
   async function loadSettings() {
-    await auth.currentUser?.getIdToken()
+    const token = await auth.currentUser?.getIdToken()
 
     if (!token) {
       console.log('No token found for company settings')
@@ -88,7 +88,7 @@ export default function Settings() {
   }
 
   async function saveSettings() {
-    await auth.currentUser?.getIdToken()
+    const token = await auth.currentUser?.getIdToken()
 
     if (!token) {
       alert('You must be signed in to save settings.')

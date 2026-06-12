@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { auth } from '../lib/firebase'
+import { auth } from '../../lib/firebase'
 
 function formatMoney(n) { return '$' + Number(n || 0).toFixed(2) }
 
