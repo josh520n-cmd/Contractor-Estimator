@@ -1,4 +1,4 @@
-import { auth } from '../../lib/firebase'
+import { auth } from '../lib/firebase'
 import { useEffect, useState } from 'react'
 
 export default function Settings() {
