@@ -1,5 +1,5 @@
 import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore'
-import { db } from '../../lib/firebase'
+import { db } from '../../../lib/firebase'
 
 function parseEstimateNumber(value) {
   if (!value) return null
