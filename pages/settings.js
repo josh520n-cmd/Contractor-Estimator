@@ -1,5 +1,6 @@
-import { auth } from '../lib/firebase'
 import { useEffect, useState } from 'react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 
 export default function Settings() {
   const [settings, setSettings] = useState({
@@ -14,17 +15,27 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadSettings()
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        console.log('No Firebase user found for company settings')
+        setLoading(false)
+        return
+      }
+
+      await loadSettings(user)
+    })
+
+    return () => unsub()
   }, [])
 
-  async function loadSettings() {
-    const token = await auth.currentUser?.getIdToken()
-
-    if (!token) {
-      console.log('No token found for company settings')
+  async function loadSettings(user = auth.currentUser) {
+    if (!user) {
+      console.log('No user found for company settings')
       setLoading(false)
       return
     }
+
+    const token = await user.getIdToken()
 
     const res = await fetch('/api/settings/company', {
       headers: {
@@ -71,12 +82,14 @@ export default function Settings() {
     }
 
     const reader = new FileReader()
+
     reader.onload = () => {
       setSettings(prev => ({
         ...prev,
         logo_data: reader.result
       }))
     }
+
     reader.readAsDataURL(file)
   }
 
@@ -88,12 +101,14 @@ export default function Settings() {
   }
 
   async function saveSettings() {
-    const token = await auth.currentUser?.getIdToken()
+    const user = auth.currentUser
 
-    if (!token) {
+    if (!user) {
       alert('You must be signed in to save settings.')
       return
     }
+
+    const token = await user.getIdToken()
 
     setSaving(true)
 
@@ -118,7 +133,7 @@ export default function Settings() {
       }
 
       alert('Company settings saved')
-      await loadSettings()
+      await loadSettings(user)
     } catch (err) {
       alert(err.message || 'Settings failed to save')
     } finally {
@@ -140,6 +155,7 @@ export default function Settings() {
     <main className="container">
       <section className="card" style={{ maxWidth: 760, width: '100%' }}>
         <h1>Company Settings</h1>
+
         <p>
           Add your company information and logo. These details will appear on
           your estimates and PDFs.
@@ -147,6 +163,7 @@ export default function Settings() {
 
         <div style={{ marginTop: 24 }}>
           <h2>Company Logo</h2>
+
           <p style={{ color: '#64748b', marginBottom: 12 }}>
             Recommended: square PNG or JPG logo. Maximum file size: 500 KB.
             Supported file types: PNG, JPG, JPEG.
