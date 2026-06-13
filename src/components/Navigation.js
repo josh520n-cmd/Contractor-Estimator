@@ -30,7 +30,7 @@ export default function Navigation() {
           <h2 className="logo">📋 Contractor Estimator</h2>
 
           <div className="nav-links">
-            <Link href="/">New Estimate</Link>
+            <Link href="/estimate">New Estimate</Link>
             <Link href="/quotes">Saved Quotes</Link>
             <Link href="/calendar">Scheduler</Link>
             <Link href="/settings">Company Settings</Link>

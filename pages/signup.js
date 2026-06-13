@@ -33,7 +33,7 @@ export default function Signup() {
         createdAt: serverTimestamp(),
       });
 
-      router.push("/");
+      router.push("/settings");
     } catch (err) {
       alert(err.message || "Signup failed");
     }
