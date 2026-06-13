@@ -860,3 +860,27 @@ textarea {
     border: none !important;
   }
 }
+
+/*print logo*/
+
+.company-logo {
+  max-width: 120px;
+  max-height: 90px;
+  object-fit: contain;
+}
+
+.print-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.company-info {
+  flex: 1;
+}
+
+.company-name {
+  font-size: 22px;
+  font-weight: 700;
+}
