@@ -825,3 +825,38 @@ textarea {
     text-align: center;
   }
 }
+
+/* Print cleanup */
+
+@media print {
+  nav,
+  aside,
+  .sidebar,
+  .sidebar-panel,
+  .navigation,
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  main,
+  .container,
+  .print-page,
+  .printable,
+  .quote-preview {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
