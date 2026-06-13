@@ -522,7 +522,7 @@ const docRef = await addDoc(collection(db, 'quotes'), {
         <div className="field-grid">
           <label>Client name<input value={client} onChange={e => setClient(e.target.value)} placeholder="Client or job name"/></label>
           <label>Phone<input value={phone} onChange={e => setPhone(e.target.value)} placeholder="123-456-7890" /></label>
-          <label>customerEmail
+          <label>Customer Email
   <input
     value={customerEmail}
     onChange={e => setCustomerEmail(e.target.value)}
