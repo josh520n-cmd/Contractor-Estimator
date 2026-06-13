@@ -155,9 +155,13 @@ export default function Print() {
 </div>
 <div ref={printRef}>
   <div className="print-header">
-        {processedLogoData && (
-          <img src={processedLogoData} alt="Logo" className="company-logo" />
-        )}
+  {companySettings.logo_data && (
+  <img
+    src={companySettings.logo_data}
+    alt="Company Logo"
+    className="company-logo"
+  />
+)}
         <div className="company-info">
           {companySettings.company_name && (
             <div className="company-name">{companySettings.company_name}</div>
