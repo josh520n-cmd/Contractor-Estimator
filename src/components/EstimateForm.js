@@ -261,15 +261,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
     }
   }
 
-  function handleLogoUpload(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      setCompanySettings({ ...companySettings, logo_data: event.target.result })
-    }
-    reader.readAsDataURL(file)
-  }
+  
 
   const materialTotal = useMemo(() => items.reduce((s, it) => s + (Number(it.qty) || 0) * (Number(it.unit) || 0), 0), [items])
   const wasteAmount = (wastePct / 100) * materialTotal

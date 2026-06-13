@@ -120,6 +120,9 @@ export default function Print() {
   
 </div>
 <div ref={printRef}>
+<pre>
+{JSON.stringify(data?.companySettings, null, 2)}
+</pre>
 <div className="print-header">
   {data?.companySettings?.logo_data && (
     <img
