@@ -408,6 +408,11 @@ const docRef = await addDoc(collection(db, 'quotes'), {
   
       console.log("QUOTE DATA TO SAVE:", quoteDataToSave)
   
+      console.log(
+        'COMPANY SETTINGS BEFORE SAVE:',
+        quoteDataToSave.companySettings
+      )
+      
       localStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
       localStorage.setItem('quotes_' + id, JSON.stringify(quoteDataToSave))
   
