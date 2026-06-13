@@ -15,7 +15,29 @@ export default function Print() {
     } catch (e) {}
   }, [])
 
+  if (!data) {
+    return (
+      <main className="container">
+        <p>No quote found. Create an estimate first.</p>
+      </main>
+    )
+  }
   
+  const {
+    client = '',
+    phone = '',
+    customerEmail = '',
+    jobAddress = '',
+    startDate = '',
+    dueDate = '',
+    estimateNumber = '',
+    status = '',
+    items = [],
+    laborTasks = [],
+    notes = '',
+    totals = {},
+    taxRate = 0
+  } = data
 
   async function emailPdf() {
     if (!data?.customerEmail) {
@@ -98,26 +120,28 @@ export default function Print() {
   
 </div>
 <div ref={printRef}>
-  <div className="print-header">
-  {companySettings.logo_data && (
-  <img
-    src={companySettings.logo_data}
-    alt="Company Logo"
-    className="company-logo"
-  />
-)}
-        <div className="company-info">
-          {companySettings.company_name && (
-            <div className="company-name">{companySettings.company_name}</div>
-          )}
-          {companySettings.company_address && (
-            <div className="company-address">{companySettings.company_address}</div>
-          )}
-          {companySettings.company_phone && (
-            <div className="company-phone">{companySettings.company_phone}</div>
-          )}
-        </div>
-      </div>
+<div className="print-header">
+  {data?.companySettings?.logo_data && (
+    <img
+      src={data.companySettings.logo_data}
+      alt="Company Logo"
+      className="company-logo"
+    />
+  )}
+
+  <div className="company-info">
+    {data?.companySettings?.company_name && (
+      <div className="company-name">{data.companySettings.company_name}</div>
+    )}
+    {data?.companySettings?.company_address && (
+      <div className="company-address">{data.companySettings.company_address}</div>
+    )}
+    {data?.companySettings?.company_phone && (
+      <div className="company-phone">{data.companySettings.company_phone}</div>
+    )}
+  </div>
+</div>
+      
 
       <header>
         <h1>Quote</h1>
