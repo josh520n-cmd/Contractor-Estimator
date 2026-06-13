@@ -194,11 +194,7 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
         '',
     }
 
-    // Remove logo_data before saving to localStorage to prevent quota exceeded errors
-    if (printData.companySettings && printData.companySettings.logo_data) {
-      printData.companySettings = { ...printData.companySettings }; // Create a new object to avoid direct mutation
-      delete printData.companySettings.logo_data;
-    }
+    
 
     localStorage.setItem('latestEstimate', JSON.stringify(printData))
     router.push('/print')
