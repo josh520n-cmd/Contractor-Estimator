@@ -685,8 +685,8 @@ const docRef = await addDoc(collection(db, 'quotes'), {
       </details>
 
       <section className="actions">
-        <button onClick={previewQuote} className="secondary">Preview / Print</button>
-        <button onClick={saveQuote} className="primary">{editMode ? 'Update Quote' : 'Save Quote'}</button>
+      <button onClick={previewQuote} className="btn-print">Preview / Print</button>
+      <button onClick={saveQuote} className="btn-save">{editMode ? 'Update Quote' : 'Save Quote'}</button>
       </section>
     </div>
   )

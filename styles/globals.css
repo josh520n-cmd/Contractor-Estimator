@@ -1012,3 +1012,7 @@ textarea {
   }
 }
 
+button.btn-save { background:#22c55e; color:white; border:none; }
+button.btn-print { background:#2563eb; color:white; border:none; }
+button.btn-email { background:#7c3aed; color:white; border:none; }
+button.btn-delete { background:#dc2626; color:white; border:none; }
