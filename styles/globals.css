@@ -1129,3 +1129,23 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
 .data-table {
   width: 100% !important;
 }
+
+/* Force estimate page cards to same width */
+.estimate-builder .client-card,
+.estimate-builder .section-panel,
+.estimate-builder .summary-card,
+.estimate-builder .sidebar-panel,
+.estimate-builder .main-content {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.estimate-builder {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.builder-grid {
+  width: 100% !important;
+  max-width: 100% !important;
+}
