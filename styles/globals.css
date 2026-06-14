@@ -639,10 +639,10 @@ body:has(.sidebar.closed) .container,
 
 .builder-grid {
   width: 100% !important;
-  max-width: 950px !important;
+  max-width: 1200px !important;
   margin: 0 auto !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px) !important;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 500px) !important;
   gap: 24px !important;
 }
 
