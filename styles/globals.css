@@ -1102,3 +1102,30 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
+/* Make stacked estimate cards equal width */
+.estimate-builder {
+  width: 100% !important;
+  max-width: 900px !important;
+  margin: 0 auto !important;
+}
+
+.main-content,
+.sidebar-panel,
+.builder-grid {
+  width: 100% !important;
+  max-width: 900px !important;
+}
+
+.main-content > .section-panel,
+.sidebar-panel > .section-panel,
+.sidebar-panel > .card,
+.summary-card,
+.client-card {
+  width: 100% !important;
+  max-width: 900px !important;
+}
+
+.data-table {
+  width: 100% !important;
+}
