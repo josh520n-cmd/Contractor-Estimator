@@ -1016,3 +1016,54 @@ button.btn-save { background:#22c55e; color:white; border:none; }
 button.btn-print { background:#2563eb; color:white; border:none; }
 button.btn-email { background:#7c3aed; color:white; border:none; }
 button.btn-delete { background:#dc2626; color:white; border:none; }
+.btn-edit {
+  background: #f59e0b;
+  color: white;
+  border: none;
+}
+
+.btn-edit:hover {
+  background: #d97706;
+}
+.btn-delete {
+  background: #dc2626;
+  color: white;
+  border: 2px solid #b91c1c;
+  font-weight: 700;
+}
+.btn-archive {
+  background: #f59e0b;
+  color: white;
+  border: none;
+}
+
+.btn-archive:hover {
+  background: #d97706;
+}
+.btn-new {
+  background: #22c55e;
+  color: white;
+  border: none;
+}
+.btn-new {
+  text-decoration: none;
+  color: white !important;
+}
+.btn-new:hover {
+  background: #16a34a;
+}
+
+.btn-download {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.btn-restore {
+  background: #f59e0b;
+  color: white;
+  border: none;
+}
+.btn-restore:hover {
+  background: #d97706;
+}

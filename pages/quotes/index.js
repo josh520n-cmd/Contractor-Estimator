@@ -212,13 +212,13 @@ router.reload()
           <h1>Your Quotes</h1>
           <p>Review saved estimates and open them for editing or download.</p>
         </div>
-        <Link href="/" className="primary">
+        <Link href="/estimate" className="btn-new">
           Create New Estimate
         </Link>
-        <button onClick={downloadBackup} className="secondary">
+        <button onClick={downloadBackup} className="btn-download">
   Download Backup
 </button>
-<label className="secondary" style={{ display: 'inline-block', padding: '10px 14px', cursor: 'pointer' }}>
+<label className="btn-restore" style={{ display: 'inline-block', padding: '10px 14px', cursor: 'pointer' }}>
   Restore Backup
   <input
     type="file"
@@ -250,7 +250,7 @@ router.reload()
             <p>Try a different search term.</p>
           ) : (
             <p>
-              Use the <Link href="/">estimate builder</Link> to create your first quote.
+              Use the <Link href="/estimate">estimate builder</Link> to create your first quote.
             </p>
           )}
         </section>
@@ -288,10 +288,10 @@ router.reload()
                     <button onClick={() => duplicateQuote(quote.id)} disabled={isProcessing} className="secondary">
                       Duplicate
                     </button>
-                    <button onClick={() => deleteQuote(quote.id)} disabled={isProcessing} className="secondary">
+                    <button onClick={() => deleteQuote(quote.id)} disabled={isProcessing} className="btn-delete">
                       Delete
                     </button>
-                    <button onClick={() => toggleArchive(quote.id, quote.status)} disabled={isProcessing} className="secondary">
+                    <button onClick={() => toggleArchive(quote.id, quote.status)} disabled={isProcessing} className="btn-archive">
                       {isArchived ? 'Restore' : 'Archive'}
                     </button>
                   </td>

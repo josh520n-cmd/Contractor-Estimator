@@ -176,7 +176,7 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
         <button onClick={refetchData} className="secondary">
           Refresh Quote
         </button>
-        <button
+        <button className="btn-print"
   onClick={() => {
     const printData = {
       ...quoteData,
@@ -202,7 +202,7 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
 >
   Print / Save PDF
 </button>
-<button
+<button className="btn-email"
   onClick={() => {
     const printData = {
       ...quoteData,
@@ -220,7 +220,7 @@ console.log("All localStorage Keys:", Object.keys(localStorage));
 >
   Email Quote
 </button>
-<button
+<button className="btn-edit"
   onClick={() => {
     localStorage.setItem('editQuote', JSON.stringify(quoteData))
     router.push(`/edit/${quoteData.id || id}`)

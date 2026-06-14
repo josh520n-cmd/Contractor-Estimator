@@ -14,7 +14,7 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
+      router.push("/estimate");
     } catch (err) {
       console.log(err);
       alert(err.message || "Login failed");
