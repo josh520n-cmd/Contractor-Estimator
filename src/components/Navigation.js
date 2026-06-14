@@ -27,7 +27,8 @@ export default function Navigation() {
 
       <nav className={`sidebar ${open ? "open" : "closed"}`}>
         <div>
-          <h2 className="logo">📋 Contractor Estimator</h2>
+          <img src="/logo.png" alt="Contractor Estimator" />
+         <h2> Contractor Estimator</h2>
 
           <div className="nav-links">
             <Link href="/estimate">New Estimate</Link>
