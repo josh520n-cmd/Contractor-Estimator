@@ -35,7 +35,7 @@ export default function Navigation() {
   }}
 >
   <img
-    src="/ce-logo.png"
+    src="/cee-logo.png"
     alt="Contractor Estimator"
     style={{
       width: "32px",

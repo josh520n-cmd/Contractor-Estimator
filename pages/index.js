@@ -4,9 +4,17 @@ export default function LandingPage() {
   return (
     <main className="landing-page">
       <section className="landing-hero">
-        <div className="landing-nav">
-          <strong className="brand">Contractor Estimator</strong>
-          <div>
+      <div className="landing-nav">
+  <div className="brand-row">
+    <img
+      src="/cee-logo.png"
+      alt="Contractor Estimator"
+      className="brand-logo"
+    />
+    <strong className="brand">Contractor Estimator</strong>
+  </div>
+
+  <div>
             <Link href="/login" className="secondary">Sign In</Link>
             <Link href="/signup" className="primary">Start Free</Link>
           </div>
