@@ -26,9 +26,34 @@ export default function Navigation() {
       </button>
 
       <nav className={`sidebar ${open ? "open" : "closed"}`}>
-        <div>
-          <img src="/logo.png" alt="Contractor Estimator" />
-         <h2> Contractor Estimator</h2>
+      <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "20px"
+  }}
+>
+  <img
+    src="/ce-logo.png"
+    alt="Contractor Estimator"
+    style={{
+      width: "32px",
+      height: "32px",
+      objectFit: "contain"
+    }}
+  />
+</div>
+ <div>
+  <h2
+    style={{
+      marginbottom: "30px",
+      color: "white",
+      fontSize: "20px"
+    }}
+  >
+    Contractor Estimator
+  </h2>
 
           <div className="nav-links">
             <Link href="/estimate">New Estimate</Link>
