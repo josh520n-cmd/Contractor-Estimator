@@ -600,6 +600,7 @@ textarea {
 
 .sidebar {
   padding: 76px 20px 24px !important;
+  background-color: #000000;
 }
 
 .sidebar-toggle {
@@ -889,7 +890,7 @@ textarea {
 
 .landing-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #000d2b, #000000);
+  background: linear-gradient(135deg, #000000, #000000);
   color: white;
 }
 
@@ -925,7 +926,7 @@ textarea {
 
 .hero-content p {
   font-size: 20px;
-  color:  #22c55e;
+  color:  #c4c4c4;
 }
 
 .hero-actions {
@@ -935,7 +936,11 @@ textarea {
   margin-top: 32px;
   flex-wrap: wrap;
 }
-
+.features-section h2 {
+  padding-bottom: 20px;
+  text-align: center;
+  color: #fbfbfb;
+}
 .landing-page .primary,
 .landing-page .secondary {
   display: inline-block;
@@ -1018,7 +1023,13 @@ textarea {
   .landing-nav div {
     margin-top: 18px;
   }
-
+  .feature-grid h3 {
+    color: #4cd137;
+  }
+  
+  .pricing-card h2 {
+    color: #4cd137;
+  }
   .feature-grid,
   .pricing-section {
     grid-template-columns: 1fr;
@@ -1027,7 +1038,7 @@ textarea {
 }
 .pricing-card h2 {
   text-align: center;
-  color: white;
+  color: #4cd137;
 }
 
 .pricing-card .price {

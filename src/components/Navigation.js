@@ -29,18 +29,30 @@ export default function Navigation() {
       <div
   style={{
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
+    aligntext: "center",
     gap: "10px",
-    marginBottom: "20px"
+    marginBottom: "5px"
   }}
 >
   <img
     src="/cee-logo.png"
     alt="Contractor Estimator"
     style={{
-      width: "32px",
-      height: "32px",
-      objectFit: "contain"
+      width: "40px",
+      height: "40px",
+      objectFit: "contain",
+      alignContent: "center"
+    }}
+  />
+  <h2
+    style={{
+      marginbottom: "30px",
+      color: "white",
+      fontSize: "20px",
+      aligntext: "center"
+
     }}
   />
 </div>
