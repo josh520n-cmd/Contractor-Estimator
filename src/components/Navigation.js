@@ -19,77 +19,25 @@ export default function Navigation() {
     router.push("/login");
   }
 
+  if (
+    router.pathname === "/" ||
+    router.pathname === "/login" ||
+    router.pathname === "/signup"
+  ) {
+    return null;
+  }
+
   return (
     <>
-      <button className="sidebar-toggle" onClick={() => setOpen(!open)}>
+      <button
+        className="sidebar-toggle"
+        onClick={() => setOpen(!open)}
+      >
         {open ? "←" : "☰"}
       </button>
 
       <nav className={`sidebar ${open ? "open" : "closed"}`}>
-      <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    aligntext: "center",
-    gap: "10px",
-    marginBottom: "5px"
-  }}
->
-  <img
-    src="/cee-logo.png"
-    alt="Contractor Estimator"
-    style={{
-      width: "40px",
-      height: "40px",
-      objectFit: "contain",
-      alignContent: "center"
-    }}
-  />
-  <h2
-    style={{
-      marginbottom: "30px",
-      color: "white",
-      fontSize: "20px",
-      aligntext: "center"
-
-    }}
-  />
-</div>
- <div>
-  <h2
-    style={{
-      marginbottom: "30px",
-      color: "white",
-      fontSize: "20px",
-      textalign: "center"
-    }}
-  >
-    Contractor Estimator
-  </h2>
-
-          <div className="nav-links">
-            <Link href="/estimate">New Estimate</Link>
-            <Link href="/quotes">Saved Quotes</Link>
-            <Link href="/calendar">Scheduler</Link>
-            <Link href="/settings">Company Settings</Link>
-          </div>
-        </div>
-
-        <div className="user-panel">
-          {user ? (
-            <>
-              <div className="signed-in">🟢 Signed in</div>
-              <div className="user-email">{user.email}</div>
-              <button type="button" onClick={handleSignOut}>Sign Out</button>
-            </>
-          ) : (
-            <>
-              <Link href="/login">Sign In</Link>
-              <Link href="/signup">Sign Up</Link>
-            </>
-          )}
-        </div>
+        {/* all your existing sidebar code goes here */}
       </nav>
     </>
   );
