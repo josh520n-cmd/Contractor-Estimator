@@ -61,7 +61,8 @@ export default function Navigation() {
     style={{
       marginbottom: "30px",
       color: "white",
-      fontSize: "20px"
+      fontSize: "20px",
+      textalign: "center"
     }}
   >
     Contractor Estimator

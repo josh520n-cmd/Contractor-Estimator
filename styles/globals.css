@@ -1220,3 +1220,12 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
   font-size: 24px;
   font-weight: 700;
 }
+.feature-grid h3 {
+  text-align: center;
+  color: #4cd137;
+}
+
+.pricing-card h2 {
+  text-align: center;
+  color: #4cd137;
+}
