@@ -206,46 +206,80 @@ router.reload()
   }
 
   return (
-    <main className="container quotes-page">
-      <div className="page-header">
+    <main className="saved-quotes-page">
+      <section className="saved-quotes-header">
         <div>
-          <h1>Your Quotes</h1>
-          <p>Review saved estimates and open them for editing or download.</p>
+          <p className="eyebrow">Saved work</p>
+          <h1>Saved Quotes</h1>
+          <p>Review saved estimates, duplicate past jobs, archive old quotes, and keep your work organized.</p>
         </div>
-        <Link href="/estimate" className="btn-new">
-          Create New Estimate
-        </Link>
-        <button onClick={downloadBackup} className="btn-download">
-  Download Backup
-</button>
-<label className="btn-restore" style={{ display: 'inline-block', padding: '10px 14px', cursor: 'pointer' }}>
-  Restore Backup
-  <input
-    type="file"
-    accept=".json,application/json"
-    onChange={restoreBackup}
-    style={{ display: 'none' }}
-  />
-</label>
-      </div>
-
-      <div className="search-panel">
+  
+        <div className="saved-quotes-actions">
+          <Link href="/estimate" className="new-quote-btn">
+            + New Estimate
+          </Link>
+  
+          <button onClick={downloadBackup} className="backup-btn">
+            Download Backup
+          </button>
+  
+          <label className="restore-btn">
+            Restore Backup
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={restoreBackup}
+              style={{ display: "none" }}
+            />
+          </label>
+        </div>
+      </section>
+  
+      <section className="quotes-stats">
+        <div className="quote-stat-card">
+          <span>Total Quotes</span>
+          <strong>{filteredQuotes.length}</strong>
+        </div>
+  
+        <div className="quote-stat-card">
+          <span>Total Value</span>
+          <strong>
+            {formatMoney(
+              filteredQuotes.reduce((sum, quote) => sum + Number(quote.total || 0), 0)
+            )}
+          </strong>
+        </div>
+  
+        <div className="quote-stat-card">
+          <span>Archived</span>
+          <strong>
+            {filteredQuotes.filter((quote) => quote.status === "archived").length}
+          </strong>
+        </div>
+      </section>
+  
+      <section className="search-panel-pro">
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by client, quote id, status, or date"
-          className="search-input"
+          placeholder="Search by client, quote id, status, or date..."
+          className="search-input-pro"
         />
-      </div>
-
-      {error && <p style={{ color: '#b00', marginBottom: '18px' }}>{error}</p>}
-
+      </section>
+  
+      {error && <p className="quotes-error">{error}</p>}
+  
       {quotes === null ? (
-        <p>Loading quotes…</p>
+        <section className="empty-quotes-card">
+          <div className="empty-icon">⏳</div>
+          <h2>Loading quotes...</h2>
+          <p>Pulling your saved estimates now.</p>
+        </section>
       ) : filteredQuotes.length === 0 ? (
-        <section className="estimator">
-          <p>No quotes found.</p>
+        <section className="empty-quotes-card">
+          <div className="empty-icon">📄</div>
+          <h2>No quotes found</h2>
           {quotes.length > 0 ? (
             <p>Try a different search term.</p>
           ) : (
@@ -253,53 +287,78 @@ router.reload()
               Use the <Link href="/estimate">estimate builder</Link> to create your first quote.
             </p>
           )}
+  
+          <Link href="/estimate" className="empty-action-btn">
+            Create Estimate
+          </Link>
         </section>
       ) : (
-        <table className="quote-list-table">
-          <thead>
-            <tr>
-              <th>Quote</th>
-              <th>Client</th>
-              <th>Status</th>
-              <th>Total</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredQuotes.map((quote) => {
-              const isProcessing = processing === quote.id
-              const isArchived = quote.status === 'archived'
-              return (
-                <tr key={quote.id} className={isArchived ? 'archived-row' : ''}>
-                  <td>
-                    <Link href={`/quotes/${quote.id}`}>
-                      {quote.id.slice(0, 8)}
-                    </Link>
-                  </td>
-                  <td>{quote.client || 'Unnamed client'}</td>
-                  <td>{quote.status || 'Unknown'}</td>
-                  <td>{formatMoney(quote.total)}</td>
-                  <td>{formatDate(quote.created_at)}</td>
-                  <td className="table-actions">
-                    <Link href={`/quotes/${quote.id}`} className="secondary">
-                      Open
-                    </Link>
-                    <button onClick={() => duplicateQuote(quote.id)} disabled={isProcessing} className="secondary">
-                      Duplicate
-                    </button>
-                    <button onClick={() => deleteQuote(quote.id)} disabled={isProcessing} className="btn-delete">
-                      Delete
-                    </button>
-                    <button onClick={() => toggleArchive(quote.id, quote.status)} disabled={isProcessing} className="btn-archive">
-                      {isArchived ? 'Restore' : 'Archive'}
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <section className="quotes-grid">
+          {filteredQuotes.map((quote) => {
+            const isProcessing = processing === quote.id
+            const isArchived = quote.status === "archived"
+  
+            return (
+              <article
+                className={`quote-card ${isArchived ? "archived-card" : ""}`}
+                key={quote.id}
+              >
+                <div className="quote-card-top">
+                  <div>
+                    <h2>{quote.client || "Unnamed client"}</h2>
+                    <p>Quote ID: {quote.id.slice(0, 8)}</p>
+                  </div>
+  
+                  <span className={`quote-status ${isArchived ? "archived" : "active"}`}>
+                    {quote.status || "Active"}
+                  </span>
+                </div>
+  
+                <div className="quote-card-details">
+                  <div>
+                    <span>Total</span>
+                    <strong>{formatMoney(quote.total)}</strong>
+                  </div>
+  
+                  <div>
+                    <span>Date Created</span>
+                    <strong>{formatDate(quote.created_at)}</strong>
+                  </div>
+                </div>
+  
+                <div className="quote-card-actions">
+                  <Link href={`/quotes/${quote.id}`} className="view-quote-btn">
+                    Open
+                  </Link>
+  
+                  <button
+                    onClick={() => duplicateQuote(quote.id)}
+                    disabled={isProcessing}
+                    className="edit-quote-btn"
+                  >
+                    Duplicate
+                  </button>
+  
+                  <button
+                    onClick={() => toggleArchive(quote.id, quote.status)}
+                    disabled={isProcessing}
+                    className="archive-quote-btn"
+                  >
+                    {isArchived ? "Restore" : "Archive"}
+                  </button>
+  
+                  <button
+                    onClick={() => deleteQuote(quote.id)}
+                    disabled={isProcessing}
+                    className="delete-quote-btn"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </article>
+            )
+          })}
+        </section>
       )}
     </main>
   )
