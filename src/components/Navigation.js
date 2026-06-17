@@ -64,23 +64,34 @@ export default function Navigation() {
           >
             Scheduler
           </Link>
+          <Link
+  href="/settings"
+  className={router.pathname === "/settings" ? "active" : ""}
+>
+  Company Settings
+</Link>
         </nav>
 
         <div className="sidebar-user">
-          {user ? (
-            <>
-              <div className="user-email">
-                {user.displayName || user.email}
-              </div>
+  {user ? (
+    <>
+      <div className="signed-in-label">
+        <span className="signed-in-check">✓</span>
+        <span>Signed in as</span>
+      </div>
 
-              <button onClick={handleSignOut} type="button">
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <Link href="/login">Sign In</Link>
-          )}
-        </div>
+      <div className="user-email">
+        {user.displayName || user.email}
+      </div>
+
+      <button onClick={handleSignOut} type="button">
+        Sign Out
+      </button>
+    </>
+  ) : (
+    <Link href="/login">Sign In</Link>
+  )}
+</div>
       </aside>
     </>
   );

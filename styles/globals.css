@@ -1377,3 +1377,56 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
   flex-shrink: 0 !important;
   border-radius: 10px !important;
 }
+.sidebar-user {
+  margin-top: auto !important;
+  border-top: 1px solid #1e293b !important;
+  padding-top: 16px !important;
+  color: #cbd5e1 !important;
+}
+
+.signed-in-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  margin-bottom: 6px !important;
+}
+
+.signed-in-check {
+  width: 17px !important;
+  height: 17px !important;
+  border-radius: 999px !important;
+  background: #22c55e !important;
+  color: #020617 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.user-email {
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  margin-bottom: 12px !important;
+  word-break: break-word !important;
+}
+
+.sidebar-user button {
+  width: 100% !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  background: #ffffff !important;
+  color: #020617 !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18) !important;
+}
+
+.sidebar-user button:hover {
+  background: #e2e8f0 !important;
+}
