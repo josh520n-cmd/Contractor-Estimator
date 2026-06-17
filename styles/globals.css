@@ -1430,3 +1430,81 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
 .sidebar-user button:hover {
   background: #e2e8f0 !important;
 }
+
+/* ===== CALENDAR PAGE CLEANUP ===== */
+
+.calendar-page {
+  min-height: 100vh;
+  padding: 60px 40px;
+  background: #eef4fb;
+  margin-left: 260px;
+  box-sizing: border-box;
+}
+
+.calendar-page h1 {
+  text-align: center;
+  font-size: 42px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.calendar-wrap,
+.calendar-container {
+  max-width: 950px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.fc {
+  width: 100%;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 34px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.fc .fc-button {
+  background: #334155 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 16px !important;
+  font-weight: 800 !important;
+}
+
+.fc .fc-button:hover {
+  background: #1e293b !important;
+}
+
+.fc .fc-daygrid-day-number {
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #475569;
+  font-weight: 900;
+  font-size: 17px;
+  text-decoration: none;
+}
+
+.fc-event {
+  border: none !important;
+  border-radius: 7px !important;
+  padding: 3px 5px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  overflow: hidden !important;
+}
+
+.fc-event-title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
