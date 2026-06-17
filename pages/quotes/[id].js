@@ -2,297 +2,323 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
-function formatMoney(n) { return '$' + Number(n || 0).toFixed(2); }
+function formatMoney(n) {
+  return '$' + Number(n || 0).toFixed(2);
+}
 
-// Component for quote details, designed to run client-side only
 function QuoteDetails({ id }) {
   const router = useRouter();
+  const quoteId = id || router.query.id;
+
   const [quoteData, setQuoteData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to refetch data
-  const refetchData = async () => {
+  const fetchQuote = async () => {
+    if (!quoteId) return;
+
     setLoading(true);
     setError(null);
-    setQuoteData(null); // Reset data before refetching
+    setQuoteData(null);
 
     try {
-      // 1. Try fetching from API
-      const res = await fetch(`/api/quotes/${id || router.query.id}`); 
-      if (res.ok) {const data = await res.json();
+      const res = await fetch(`/api/quotes/${quoteId}`);
 
-        console.log("QUOTE DATA:", data);
-        console.log("customerEmailfrompayload:", data.customerEmail, data.payload?.customerEmail);
-        setQuoteData({
-          ...data,
-          ...(data.payload || {}),
-          customerEmail:
-            data.customerEmail ||
-            data.payload?.customerEmail ||
-            ''
-        });
-        setLoading(false);
-        console.log("Successfully fetched quote from API:", data);
-        return;
+      if (!res.ok) {
+        throw new Error(`Firestore fetch failed (${res.status})`);
       }
-    
-       else {
-        console.warn(`API fetch failed with status: ${res.status}`);
+
+      const data = await res.json();
+
+      if (!data) {
+        throw new Error("Quote not found in Firestore");
       }
-    } catch (apiError) {
-      console.error("Error fetching quote from API:", apiError);
-    }
 
-    // 2. If API failed, try localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        const localStorageKey = 'quotes_' + (id || router.query.id);
-        console.log("Quote ID:", id);
-console.log("Router Query ID:", router.query.id);
-console.log("Storage Key:", localStorageKey);
-console.log("All localStorage Keys:", Object.keys(localStorage));
-        console.log("Attempting to read from localStorage with key:", localStorageKey);
-        
-        // --- NEW LOGGING: Log all localStorage keys ---
-        console.log("All keys in localStorage:", Object.keys(localStorage));
-        // --- END NEW LOGGING ---
+      setQuoteData({
+        ...data,
+        ...(data.payload || {}),
+        customerEmail:
+          data.customerEmail ||
+          data.payload?.customerEmail ||
+          ''
+      });
 
-        const localValue = localStorage.getItem(localStorageKey);
-        
-        if (localValue && localValue !== 'null' && localValue !== 'undefined' && localValue.length > 0) {
-          console.log("Found value in localStorage:", localValue);
-          const parsed = JSON.parse(localValue);
-          console.log("Parsed value from localStorage (before payload construction):", parsed); 
-
-          if (parsed && typeof parsed === 'object') {
-            let quotePayload = { items: [], laborTasks: [] }; 
-
-            if (parsed.items && Array.isArray(parsed.items)) {
-              quotePayload.items = parsed.items;
-              quotePayload.laborTasks = Array.isArray(parsed.laborTasks) ? parsed.laborTasks : [];
-              quotePayload.overheadPct = parsed.overheadPct;
-              quotePayload.profitPct = parsed.profitPct;
-              quotePayload.wastePct = parsed.wastePct;
-              quotePayload.taxRate = parsed.taxRate;
-              quotePayload.companySettings = parsed.companySettings;
-              quotePayload.totals = parsed.totals;
-              quotePayload.customerEmail = parsed.customerEmail;
-              quotePayload.startDate = parsed.startDate;
-              quotePayload.dueDate = parsed.dueDate;
-            } else if (parsed.payload && typeof parsed.payload === 'object') {
-              quotePayload = {
-                ...parsed.payload, 
-                items: Array.isArray(parsed.payload.items) ? parsed.payload.items : [], 
-                laborTasks: Array.isArray(parsed.payload.laborTasks) ? parsed.payload.laborTasks : [],
-              };
-            }
-            console.log("Constructed quotePayload:", quotePayload); 
-
-            setQuoteData({
-              id: parsed.id || id || router.query.id,
-              client: parsed.client || parsed.customerName || parsed.customer || '',
-              customerEmail: parsed.customerEmail || parsed.payload?.customerEmail || '',
-              notes: parsed.notes || '',
-              payload: {
-                ...quotePayload,
-                items: Array.isArray(parsed.items)
-                  ? parsed.items
-                  : Array.isArray(parsed.payload?.items)
-                    ? parsed.payload.items
-                    : [],
-                laborTasks: Array.isArray(parsed.laborTasks)
-                  ? parsed.laborTasks
-                  : Array.isArray(parsed.payload?.laborTasks)
-                    ? parsed.payload.laborTasks
-                    : [],
-                 
-                    
-                totals: parsed.totals || parsed.payload?.totals || {},
-                overheadPct: parsed.overheadPct ?? parsed.payload?.overheadPct,
-                profitPct: parsed.profitPct ?? parsed.payload?.profitPct,
-                wastePct: parsed.wastePct ?? parsed.payload?.wastePct,
-                taxRate: parsed.taxRate ?? parsed.payload?.taxRate,
-                companySettings: parsed.companySettings || parsed.payload?.companySettings || {},
-              },
-              startDate: parsed.startDate || parsed.scheduledStartDate || '',
-              dueDate: parsed.dueDate || parsed.endDate || parsed.scheduledEndDate || '',
-            });
-            setLoading(false); // Set loading to false here after successful data load
-          } else {
-            console.error("localStorage data is not a valid object:", parsed);
-            setError("Invalid quote data format.");
-            setLoading(false); // Set loading to false on error
-          }
-        } else {
-          console.log("No valid value found in localStorage for key:", localStorageKey);
-          setError("Quote not found or empty.");
-          setLoading(false); // Set loading to false on error
-        }
-      } catch (localStorageError) {
-        console.error("Error reading from localStorage:", localStorageError);
-        setError("Could not load quote data from local storage.");
-        setLoading(false); // Set loading to false on error
-      }
-    } else {
-      console.error("Quote not found and not in a browser environment for localStorage.");
-      setError("Quote not found. Data unavailable.");
-      setLoading(false); // Set loading to false on error
+    } catch (err) {
+      console.error(err);
+      setError("This quote does not exist in Firestore.");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const currentId = id || router.query.id;
-    if (!currentId) return;
-    refetchData();
-  }, [id, router.query.id]);
+    fetchQuote();
+  }, [quoteId]);
 
   if (loading) {
-    return <div className="container">Loading...</div>;
+    return <main className="quote-detail-page">Loading quote...</main>;
   }
 
   if (error) {
-    return <div className="container error-message">{error}</div>;
+    return <main className="quote-detail-page quotes-error">{error}</main>;
   }
 
   if (!quoteData) {
-    return <div className="container">No quote data available.</div>;
+    return <main className="quote-detail-page">No quote found.</main>;
   }
+
+  const payload = quoteData.payload || quoteData;
+
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  const laborTasks = Array.isArray(payload.laborTasks) ? payload.laborTasks : [];
+  const totals = payload.totals || {};
+
+  const quoteIdFinal = quoteData.id || quoteId;
+
+  const clientName =
+    quoteData.client ||
+    payload.client ||
+    "Unnamed client";
+
+  const jobAddress =
+    quoteData.jobAddress ||
+    payload.jobAddress ||
+    "";
+
+  const customerEmail =
+    quoteData.customerEmail ||
+    payload.customerEmail ||
+    "";
+
+  const status =
+    quoteData.status ||
+    payload.status ||
+    "Draft";
+
   return (
-    <main className="container">
-      <div className="page-header">
+    <main className="quote-detail-page">
+
+      {/* HEADER */}
+      <section className="quote-detail-header">
         <div>
-          <h1>Quote #{quoteData.id ? String(quoteData.id).substring(0, 6) : "N/A"}</h1>
-          <p>Client: {quoteData.client || "N/A"}</p>
-          {(quoteData.jobAddress || quoteData.payload?.jobAddress) && (
-  <p>
-    Job Address: {quoteData.jobAddress || quoteData.payload?.jobAddress}
-  </p>
-)}
-          {quoteData.startDate && <p>Start Date: {new Date(quoteData.startDate).toLocaleDateString()}</p>}
-          {quoteData.dueDate && <p>Due Date: {new Date(quoteData.dueDate).toLocaleDateString()}</p>}
+          <p className="eyebrow">Firestore Quote</p>
+          <h1>Quote #{quoteIdFinal.slice(0, 10)}</h1>
+          <p>Live data pulled directly from Firestore database.</p>
         </div>
-  
-        <button onClick={refetchData} className="secondary">
-          Refresh Quote
-        </button>
-        <button className="btn-print"
-  onClick={() => {
-    const printData = {
-      ...quoteData,
-      ...(quoteData.payload || {}),
-      id: quoteData.id || id,
-      quoteId: quoteData.id || id,
-      estimateNumber:
-        quoteData.estimateNumber ||
-        quoteData.payload?.estimateNumber ||
-        quoteData.id ||
-        id,
-      jobAddress:
-        quoteData.jobAddress ||
-        quoteData.payload?.jobAddress ||
-        '',
-    }
 
-    
+        <div className="quote-detail-actions">
+          <button onClick={fetchQuote} className="quote-action-secondary">
+            Refresh
+          </button>
 
-    localStorage.setItem('latestEstimate', JSON.stringify(printData))
-    router.push('/print')
-  }}
->
-  Print / Save PDF
-</button>
-<button className="btn-email"
-  onClick={() => {
-    const printData = {
-      ...quoteData,
-      ...(quoteData.payload || {}),
-    }
+          <button
+            className="quote-action-primary"
+            onClick={() => {
+              localStorage.setItem("latestEstimate", JSON.stringify(quoteData));
+              router.push("/print");
+            }}
+          >
+            Print / Save PDF
+          </button>
 
-    if (printData.companySettings?.logo_data) {
-      printData.companySettings = { ...printData.companySettings }
-      delete printData.companySettings.logo_data
-    }
+          <button
+            className="quote-action-email"
+            onClick={() => {
+              localStorage.setItem("latestEstimate", JSON.stringify(quoteData));
+              router.push("/print");
+            }}
+          >
+            Email Quote
+          </button>
 
-    localStorage.setItem('latestEstimate', JSON.stringify(printData))
-    router.push('/print')
-  }}
->
-  Email Quote
-</button>
-<button className="btn-edit"
-  onClick={() => {
-    localStorage.setItem('editQuote', JSON.stringify(quoteData))
-    router.push(`/edit/${quoteData.id || id}`)
-  }}
->
-  Edit Quote
-</button>
-      </div>
-  
-      <section>
-        <h2>Items</h2>
-        {quoteData.payload?.items?.length ? (
-          <ul>
-            {quoteData.payload.items.map((item, index) => (
-              <li key={index}>
-                {item.name || item.description || item.desc || item.label || item.material || "Item"} -{" "}
-                {formatMoney(
-                  item.total ??
-                  item.lineTotal ??
-                  item.price ??
-                  (Number(item.qty || item.quantity || 0) *
-                    Number(item.unit || item.unitPrice || item.unit_price || 0))
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No items available.</p>
-        )}
-  
-        <h2>Labor Tasks</h2>
-        {quoteData.payload?.laborTasks?.length ? (
-          <ul>
-            {quoteData.payload.laborTasks.map((task, index) => (
-              <li key={index}>
-                {task.name || task.description || task.desc || task.task || "Labor"} -{" "}
-                {formatMoney(
-                  task.total ??
-                  task.lineTotal ??
-                  task.price ??
-                  (Number(task.hours || task.qty || 0) *
-                    Number(task.rate || task.unit || 0))
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No labor tasks available.</p>
-        )}
-  
-        <h2>Totals</h2>
-        <p>Materials: {formatMoney(quoteData.payload?.totals?.materialTotal || 0)}</p>
-        <p>Labor: {formatMoney(quoteData.payload?.totals?.laborTotal || 0)}</p>
-        <p>Overhead: {formatMoney(quoteData.payload?.totals?.overheadAmount || 0)}</p>
-        <p>Profit: {formatMoney(quoteData.payload?.totals?.profitAmount || 0)}</p>
-        <p>Tax: {formatMoney(quoteData.payload?.totals?.taxAmount || 0)}</p>
-        <p><strong>Total: {formatMoney(quoteData.payload?.totals?.grandTotal || 0)}</strong></p>
+          <button
+            className="quote-action-edit"
+            onClick={() => {
+              const updated = {
+                ...quoteData,
+                updatedAt: new Date().toISOString()
+              };
+
+              localStorage.setItem("editQuote", JSON.stringify(updated));
+              router.push(`/edit/${quoteIdFinal}`);
+            }}
+          >
+            Edit Quote
+          </button>
+
+          <button
+            className="quote-action-secondary"
+            onClick={() => router.push(`/quotes/client/${quoteIdFinal}`)}
+          >
+            Client View
+          </button>
+
+          <p className="quote-meta">
+            Last updated: {quoteData.updatedAt
+              ? new Date(quoteData.updatedAt).toLocaleString()
+              : "Unknown"}
+          </p>
+        </div>
       </section>
-  
+
+      {/* OVERVIEW */}
+      <section className="quote-overview-grid">
+        <div className="quote-overview-card large">
+          <span>Client</span>
+          <strong>{clientName}</strong>
+          {jobAddress && <p>{jobAddress}</p>}
+        </div>
+
+        <div className="quote-overview-card">
+          <span>Status</span>
+          <strong>{status}</strong>
+        </div>
+
+        <div className="quote-overview-card">
+          <span>Email</span>
+          <strong>{customerEmail || "None"}</strong>
+        </div>
+      </section>
+
+      {/* ITEMS */}
+      <section className="quote-document-card">
+        <div className="quote-section-title">
+          <h2>Items</h2>
+          <span>{items.length}</span>
+        </div>
+
+        {items.length ? (
+          <div className="quote-line-table">
+            {items.map((item, i) => {
+              const qty = Number(item.qty || item.quantity || 1);
+
+              const unit =
+                Number(
+                  item.unitPrice ||
+                  item.unit_price ||
+                  item.unit ||
+                  item.cost ||
+                  item.rate ||
+                  item.price ||
+                  0
+                );
+
+              const total =
+                item.total ??
+                item.lineTotal ??
+                (qty * unit);
+
+              return (
+                <div className="quote-line-row" key={i}>
+                  <div>
+                    <strong>{item.name || "Item"}</strong>
+                    <span>Qty: {qty}</span>
+                  </div>
+
+                  <strong>{formatMoney(total)}</strong>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="quote-empty-text">No items found.</p>
+        )}
+      </section>
+
+      {/* LABOR */}
+      <section className="quote-document-card">
+        <div className="quote-section-title">
+          <h2>Labor</h2>
+          <span>{laborTasks.length}</span>
+        </div>
+
+        {laborTasks.length ? (
+          <div className="quote-line-table">
+            {laborTasks.map((task, i) => {
+              const hours = Number(task.hours || task.qty || 0);
+
+              const rate =
+                Number(
+                  task.rate ||
+                  task.unit ||
+                  task.unitRate ||
+                  task.cost ||
+                  task.price ||
+                  0
+                );
+
+              const total =
+                task.total ??
+                task.lineTotal ??
+                (hours * rate);
+
+              return (
+                <div className="quote-line-row" key={i}>
+                  <div>
+                    <strong>{task.name || "Labor"}</strong>
+                    <span>Hours: {hours}</span>
+                  </div>
+
+                  <strong>{formatMoney(total)}</strong>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="quote-empty-text">No labor tasks found.</p>
+        )}
+      </section>
+
+      {/* TOTALS */}
+      <section className="quote-total-card">
+  <h2>Summary</h2>
+
+  <div className="quote-total-row">
+    <span>Materials</span>
+    <strong>{formatMoney(totals.materialTotal || 0)}</strong>
+  </div>
+
+  <div className="quote-total-row">
+    <span>Labor</span>
+    <strong>{formatMoney(totals.laborTotal || 0)}</strong>
+  </div>
+
+  <div className="quote-total-row">
+    <span>Overhead</span>
+    <strong>{formatMoney(totals.overheadAmount || 0)}</strong>
+  </div>
+
+  <div className="quote-total-row">
+    <span>Waste Buffer</span>
+    <strong>{formatMoney(totals.wasteAmount || 0)}</strong>
+  </div>
+
+  <div className="quote-total-row">
+    <span>Tax</span>
+    <strong>{formatMoney(totals.taxAmount || 0)}</strong>
+  </div>
+
+  <div className="quote-grand-total">
+    <span>Grand Total</span>
+    <strong>{formatMoney(totals.grandTotal || 0)}</strong>
+  </div>
+</section>
+      {/* NOTES */}
       {quoteData.notes && (
-        <section>
-          <h2>Notes</h2>
-          <p>{quoteData.notes}</p>
+        <section className="quote-document-card">
+          <div className="quote-section-title">
+            <h2>Notes</h2>
+          </div>
+          <p className="quote-notes">{quoteData.notes}</p>
         </section>
       )}
+
     </main>
   );
- 
-  }
-  
-  const QuotePage = dynamic(() => Promise.resolve(QuoteDetails), {
-    ssr: false,
-  });
-  
-  export default QuotePage;
+}
+
+const QuotePage = dynamic(() => Promise.resolve(QuoteDetails), {
+  ssr: false,
+});
+
+export default QuotePage;
