@@ -31,21 +31,38 @@ function QuoteDetails({ id }) {
       const data = await res.json();
 
       if (!data) {
-        throw new Error("Quote not found in Firestore");
+        throw new Error("Quote not found");
       }
 
+      // 🔥 SAFE NORMALIZED STRUCTURE (IMPORTANT FIX)
       setQuoteData({
         ...data,
-        ...(data.payload || {}),
+        payload: data.payload || {},
+
+        // EMAIL
         customerEmail:
           data.customerEmail ||
           data.payload?.customerEmail ||
-          ''
+          '',
+
+        // DATES (FIXED FOR CALENDAR)
+        startDate:
+          data.startDate ||
+          data.payload?.startDate ||
+          data.scheduledStartDate ||
+          null,
+
+        dueDate:
+          data.dueDate ||
+          data.payload?.dueDate ||
+          data.payload?.endDate ||
+          data.scheduledEndDate ||
+          null
       });
 
     } catch (err) {
       console.error(err);
-      setError("This quote does not exist in Firestore.");
+      setError("Quote could not be loaded.");
     } finally {
       setLoading(false);
     }
@@ -55,19 +72,11 @@ function QuoteDetails({ id }) {
     fetchQuote();
   }, [quoteId]);
 
-  if (loading) {
-    return <main className="quote-detail-page">Loading quote...</main>;
-  }
+  if (loading) return <main className="quote-detail-page">Loading...</main>;
+  if (error) return <main className="quote-detail-page quotes-error">{error}</main>;
+  if (!quoteData) return <main className="quote-detail-page">No quote found.</main>;
 
-  if (error) {
-    return <main className="quote-detail-page quotes-error">{error}</main>;
-  }
-
-  if (!quoteData) {
-    return <main className="quote-detail-page">No quote found.</main>;
-  }
-
-  const payload = quoteData.payload || quoteData;
+  const payload = quoteData.payload || {};
 
   const items = Array.isArray(payload.items) ? payload.items : [];
   const laborTasks = Array.isArray(payload.laborTasks) ? payload.laborTasks : [];
@@ -75,25 +84,10 @@ function QuoteDetails({ id }) {
 
   const quoteIdFinal = quoteData.id || quoteId;
 
-  const clientName =
-    quoteData.client ||
-    payload.client ||
-    "Unnamed client";
-
-  const jobAddress =
-    quoteData.jobAddress ||
-    payload.jobAddress ||
-    "";
-
-  const customerEmail =
-    quoteData.customerEmail ||
-    payload.customerEmail ||
-    "";
-
-  const status =
-    quoteData.status ||
-    payload.status ||
-    "Draft";
+  const clientName = quoteData.client || payload.client || "Unnamed client";
+  const jobAddress = quoteData.jobAddress || payload.jobAddress || "";
+  const customerEmail = quoteData.customerEmail || payload.customerEmail || "";
+  const status = quoteData.status || payload.status || "Draft";
 
   return (
     <main className="quote-detail-page">
@@ -103,7 +97,7 @@ function QuoteDetails({ id }) {
         <div>
           <p className="eyebrow">Firestore Quote</p>
           <h1>Quote #{quoteIdFinal.slice(0, 10)}</h1>
-          <p>Live data pulled directly from Firestore database.</p>
+          <p>Live data from Firestore</p>
         </div>
 
         <div className="quote-detail-actions">
@@ -269,40 +263,41 @@ function QuoteDetails({ id }) {
         )}
       </section>
 
-      {/* TOTALS */}
+      {/* TOTALS (FIXED FULL BREAKDOWN) */}
       <section className="quote-total-card">
-  <h2>Summary</h2>
+        <h2>Summary</h2>
 
-  <div className="quote-total-row">
-    <span>Materials</span>
-    <strong>{formatMoney(totals.materialTotal || 0)}</strong>
-  </div>
+        <div className="quote-total-row">
+          <span>Materials</span>
+          <strong>{formatMoney(totals.materialTotal || 0)}</strong>
+        </div>
 
-  <div className="quote-total-row">
-    <span>Labor</span>
-    <strong>{formatMoney(totals.laborTotal || 0)}</strong>
-  </div>
+        <div className="quote-total-row">
+          <span>Labor</span>
+          <strong>{formatMoney(totals.laborTotal || 0)}</strong>
+        </div>
 
-  <div className="quote-total-row">
-    <span>Overhead</span>
-    <strong>{formatMoney(totals.overheadAmount || 0)}</strong>
-  </div>
+        <div className="quote-total-row">
+          <span>Overhead</span>
+          <strong>{formatMoney(totals.overheadAmount || 0)}</strong>
+        </div>
 
-  <div className="quote-total-row">
-    <span>Waste Buffer</span>
-    <strong>{formatMoney(totals.wasteAmount || 0)}</strong>
-  </div>
+        <div className="quote-total-row">
+          <span>Waste Buffer</span>
+          <strong>{formatMoney(totals.wasteAmount || 0)}</strong>
+        </div>
 
-  <div className="quote-total-row">
-    <span>Tax</span>
-    <strong>{formatMoney(totals.taxAmount || 0)}</strong>
-  </div>
+        <div className="quote-total-row">
+          <span>Tax</span>
+          <strong>{formatMoney(totals.taxAmount || 0)}</strong>
+        </div>
 
-  <div className="quote-grand-total">
-    <span>Grand Total</span>
-    <strong>{formatMoney(totals.grandTotal || 0)}</strong>
-  </div>
-</section>
+        <div className="quote-grand-total">
+          <span>Grand Total</span>
+          <strong>{formatMoney(totals.grandTotal || 0)}</strong>
+        </div>
+      </section>
+
       {/* NOTES */}
       {quoteData.notes && (
         <section className="quote-document-card">
