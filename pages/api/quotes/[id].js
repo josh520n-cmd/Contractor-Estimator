@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
-import { normalizeQuote, formatMoney, formatDate } from "../../lib/normalizeQuote";
+import { normalizeQuote, formatMoney, formatDate } from "../../../lib/normalizeQuote";
 
 function QuoteDetails() {
   const router = useRouter();

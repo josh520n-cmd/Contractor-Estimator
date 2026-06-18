@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { normalizeQuote, formatMoney, formatDate } from "../../../lib/normalizeQuote";
+import { normalizeQuote, formatMoney, formatDate } from "../../lib/normalizeQuote";
 
 export default function ClientQuoteView() {
   const router = useRouter();
