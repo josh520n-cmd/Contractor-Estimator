@@ -1,37 +1,48 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { normalizeQuote, formatMoney, formatDate } from "../../lib/normalizeQuote";
+import {
+  normalizeQuote,
+  formatMoney,
+  formatDate,
+} from "../../lib/normalizeQuote";
 
-export default function ClientQuoteView() {
+function fetchWithTimeout(url, options = {}, timeout = 10000) {
+  return Promise.race([
+    fetch(url, options),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Quote load timed out")), timeout)
+    ),
+  ]);
+}
+
+export default function QuoteDetailsPage() {
   const router = useRouter();
-  const { id, token } = router.query;
+  const { id } = router.query;
 
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   async function loadQuote() {
-    if (!id) return;
+    if (!router.isReady || !id) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const url = token
-        ? `/api/client-quote?id=${id}&token=${token}`
-        : `/api/quotes/${id}`;
+      const res = await fetchWithTimeout(`/api/quotes/${id}`);
 
-      const res = await fetch(url);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(data.error || "Quote not found");
+        throw new Error(data.error || "Quote could not be loaded");
       }
 
       setQuote(normalizeQuote(data));
     } catch (err) {
-      console.error("Client quote load error:", err);
-      setError("This estimate is not available.");
+      console.error("QUOTE PAGE LOAD ERROR:", err);
+      setError(err.message || "Quote could not be loaded");
+      setQuote(null);
     } finally {
       setLoading(false);
     }
@@ -39,116 +50,218 @@ export default function ClientQuoteView() {
 
   useEffect(() => {
     loadQuote();
-  }, [id, token]);
+  }, [router.isReady, id]);
+
+  function goToPrint() {
+    if (!quote) return;
+
+    localStorage.setItem("latestEstimate", JSON.stringify(quote));
+    router.push("/print");
+  }
+
+  function goToEdit() {
+    if (!quote) return;
+
+    localStorage.setItem("editQuote", JSON.stringify(quote));
+    router.push(`/edit/${quote.id || id}`);
+  }
 
   if (loading) {
-    return <main className="client-page">Loading estimate...</main>;
+    return (
+      <main className="quote-detail-page">
+        <p>Loading estimate...</p>
+      </main>
+    );
   }
 
   if (error) {
-    return <main className="client-page">{error}</main>;
+    return (
+      <main className="quote-detail-page">
+        <section className="quote-document-card">
+          <h1>Estimate failed to load</h1>
+          <p>{error}</p>
+
+          <button onClick={loadQuote} className="quote-action-primary">
+            Try Again
+          </button>
+
+          <button
+            onClick={() => router.push("/quotes")}
+            className="quote-action-secondary"
+          >
+            Back to Saved Quotes
+          </button>
+        </section>
+      </main>
+    );
   }
 
   if (!quote) {
-    return <main className="client-page">No estimate found.</main>;
+    return (
+      <main className="quote-detail-page">
+        <p>No estimate found.</p>
+      </main>
+    );
   }
 
+  const quoteId = quote.id || id;
+
   return (
-    <main className="client-page">
-      <header className="client-header">
-        {quote.companySettings?.logo_data && (
-          <img
-            src={quote.companySettings.logo_data}
-            alt="Company Logo"
-            className="client-logo"
-          />
-        )}
+    <main className="quote-detail-page">
+      <section className="quote-detail-header">
+        <div>
+          <p className="eyebrow">Estimate</p>
+          <h1>{quote.estimateNumber || quoteId}</h1>
+          <p>
+            Review this estimate, print it, email it, or open the client view.
+          </p>
+        </div>
 
-        <h1>Estimate</h1>
-        <p>{quote.client || "Client"}</p>
+        <div className="quote-detail-actions">
+          <button onClick={loadQuote} className="quote-action-secondary">
+            Refresh
+          </button>
 
-        {quote.jobAddress && <p>{quote.jobAddress}</p>}
+          <button onClick={goToPrint} className="quote-action-primary">
+            Print / Save PDF
+          </button>
 
-        {quote.startDate && (
-          <p>Start: {formatDate(quote.startDate)}</p>
-        )}
+          <button onClick={goToPrint} className="quote-action-email">
+            Email Quote
+          </button>
 
-        {quote.dueDate && (
-          <p>End: {formatDate(quote.dueDate)}</p>
-        )}
-      </header>
+          <button onClick={goToEdit} className="quote-action-edit">
+            Edit Quote
+          </button>
 
-      <section className="client-section">
-        <h2>Items</h2>
+          <button
+            onClick={() => router.push(`/quotes/client/${quoteId}`)}
+            className="quote-action-secondary"
+          >
+            Client View
+          </button>
+        </div>
+      </section>
+
+      <section className="quote-overview-grid">
+        <div className="quote-overview-card large">
+          <span>Client</span>
+          <strong>{quote.client || "Unnamed client"}</strong>
+          {quote.jobAddress && <p>{quote.jobAddress}</p>}
+        </div>
+
+        <div className="quote-overview-card">
+          <span>Status</span>
+          <strong>{quote.status || "Draft"}</strong>
+        </div>
+
+        <div className="quote-overview-card">
+          <span>Email</span>
+          <strong>{quote.customerEmail || "None"}</strong>
+        </div>
+
+        <div className="quote-overview-card">
+          <span>Start Date</span>
+          <strong>{quote.startDate ? formatDate(quote.startDate) : "Not set"}</strong>
+        </div>
+
+        <div className="quote-overview-card">
+          <span>Due Date</span>
+          <strong>{quote.dueDate ? formatDate(quote.dueDate) : "Not set"}</strong>
+        </div>
+      </section>
+
+      <section className="quote-document-card">
+        <div className="quote-section-title">
+          <h2>Items</h2>
+          <span>{quote.items.length}</span>
+        </div>
 
         {quote.items.length ? (
-          quote.items.map((item, index) => (
-            <div key={index} className="client-row">
-              <span>{item.name || "Item"}</span>
-              <strong>{formatMoney(item.total)}</strong>
-            </div>
-          ))
+          <div className="quote-line-table">
+            {quote.items.map((item, index) => (
+              <div className="quote-line-row" key={index}>
+                <div>
+                  <strong>{item.name || "Item"}</strong>
+                  <span>
+                    Qty: {item.qty} × {formatMoney(item.unitPrice)}
+                  </span>
+                </div>
+                <strong>{formatMoney(item.total)}</strong>
+              </div>
+            ))}
+          </div>
         ) : (
-          <p>No items listed.</p>
+          <p className="quote-empty-text">No items listed.</p>
         )}
       </section>
 
-      <section className="client-section">
-        <h2>Labor</h2>
+      <section className="quote-document-card">
+        <div className="quote-section-title">
+          <h2>Labor</h2>
+          <span>{quote.laborTasks.length}</span>
+        </div>
 
         {quote.laborTasks.length ? (
-          quote.laborTasks.map((task, index) => (
-            <div key={index} className="client-row">
-              <span>{task.name || "Labor"}</span>
-              <strong>{formatMoney(task.total)}</strong>
-            </div>
-          ))
+          <div className="quote-line-table">
+            {quote.laborTasks.map((task, index) => (
+              <div className="quote-line-row" key={index}>
+                <div>
+                  <strong>{task.name || "Labor"}</strong>
+                  <span>
+                    {task.hours} hrs × {formatMoney(task.rate)}
+                  </span>
+                </div>
+                <strong>{formatMoney(task.total)}</strong>
+              </div>
+            ))}
+          </div>
         ) : (
-          <p>No labor listed.</p>
+          <p className="quote-empty-text">No labor listed.</p>
         )}
       </section>
 
-      <section className="client-section">
-        <h2>Summary</h2>
+      <section className="quote-total-card">
+        <h2>Estimate Summary</h2>
 
-        <div className="client-row">
+        <div className="quote-total-row">
           <span>Materials</span>
           <strong>{formatMoney(quote.totals.materialTotal)}</strong>
         </div>
 
-        <div className="client-row">
+        <div className="quote-total-row">
           <span>Waste Buffer</span>
           <strong>{formatMoney(quote.totals.wasteAmount)}</strong>
         </div>
 
-        <div className="client-row">
+        <div className="quote-total-row">
           <span>Labor</span>
           <strong>{formatMoney(quote.totals.laborTotal)}</strong>
         </div>
 
-        <div className="client-row">
+        <div className="quote-total-row">
           <span>Overhead</span>
           <strong>{formatMoney(quote.totals.overheadAmount)}</strong>
         </div>
 
-        <div className="client-row">
+        <div className="quote-total-row">
           <span>Profit</span>
           <strong>{formatMoney(quote.totals.profitAmount)}</strong>
         </div>
 
-        <div className="client-row">
+        <div className="quote-total-row">
           <span>Tax</span>
           <strong>{formatMoney(quote.totals.taxAmount)}</strong>
         </div>
-      </section>
 
-      <section className="client-total">
-        <h2>Total</h2>
-        <strong>{formatMoney(quote.totals.grandTotal)}</strong>
+        <div className="quote-grand-total">
+          <span>Grand Total</span>
+          <strong>{formatMoney(quote.totals.grandTotal)}</strong>
+        </div>
       </section>
 
       {quote.notes && (
-        <section className="client-section">
+        <section className="quote-document-card">
           <h2>Notes</h2>
           <p>{quote.notes}</p>
         </section>
