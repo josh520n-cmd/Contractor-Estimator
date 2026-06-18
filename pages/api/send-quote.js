@@ -1,4 +1,8 @@
 import { Resend } from "resend";
+import crypto from "crypto";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import { normalizeQuote, formatMoney } from "../../lib/normalizeQuote";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,24 +28,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const quote = req.body;
+    const quote = normalizeQuote(req.body || {});
 
-    const estimateNumber =
-      quote.estimateNumber ||
-      quote.id ||
-      quote.quoteId ||
-      "";
-
-    const jobAddress =
-      quote.jobAddress ||
-      quote.address ||
-      "";
-
-    const customerEmail =
-      quote.email ||
-      quote.customerEmail ||
-      quote.payload?.customerEmail ||
-      "";
+    const customerEmail = quote.customerEmail;
 
     if (!customerEmail) {
       return res.status(400).json({
@@ -49,52 +38,68 @@ export default async function handler(req, res) {
       });
     }
 
-    // 🔥 SAFE CLIENT LINK (does NOT break anything else)
-    const clientLink = `${process.env.NEXT_PUBLIC_BASE_URL}/quotes/client/${estimateNumber || quote.id || quote.quoteId}`;
+    const quoteId = quote.id || quote.quoteId || "";
+    let clientLink = "";
+
+    if (quoteId) {
+      const token = crypto.randomBytes(24).toString("hex");
+
+      await setDoc(doc(db, "quoteLinks", quoteId), {
+        token,
+        quoteId,
+        createdAt: new Date().toISOString(),
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7,
+      });
+
+      clientLink = `${process.env.NEXT_PUBLIC_BASE_URL}/quotes/client/${quoteId}?token=${token}`;
+    }
 
     const attachments = [];
 
-    // 🔥 KEEP YOUR PDF LOGIC EXACTLY AS YOU HAD IT
-    if (quote.pdfBase64) {
-      const cleanBase64 = quote.pdfBase64
+    if (req.body?.pdfBase64) {
+      const cleanBase64 = req.body.pdfBase64
         .replace(/^data:application\/pdf;base64,/, "")
         .replace(/^data:application\/pdf;filename=.*;base64,/, "");
 
       attachments.push({
-        filename: `${estimateNumber || "estimate"}.pdf`,
+        filename: `${quote.estimateNumber || "estimate"}.pdf`,
         content: cleanBase64,
       });
     }
 
     const contractorEmail =
-      quote.contractorEmail ||
-      quote.companyEmail ||
-      quote.userEmail ||
-      quote.email ||
+      req.body?.contractorEmail ||
+      req.body?.companyEmail ||
+      req.body?.userEmail ||
       "josh520n@gmail.com";
 
-    const { data, error } = await resend.emails.send({
-      from: "Contractor Estimator <quotes@constructionestimator.xyz>",
-      replyTo: contractorEmail,
-      to: customerEmail,
-      subject: `Estimate ${estimateNumber}`,
-      html: `
-        <h2>Your Estimate</h2>
-
-        <p>Hello ${quote.client || "Customer"},</p>
-        <p>Your estimate is attached as a PDF.</p>
-
-        <p><b>Estimate #:</b> ${estimateNumber}</p>
-        <p><b>Job Address:</b> ${jobAddress}</p>
-
-        <p><b>Total:</b> $${quote.totals?.grandTotal || 0}</p>
-
+    const linkHtml = clientLink
+      ? `
         <p><b>View Your Estimate Online:</b></p>
         <p>
           <a href="${clientLink}" target="_blank">
             Open Live Estimate
           </a>
         </p>
+      `
+      : "";
+
+    const { data, error } = await resend.emails.send({
+      from: "Contractor Estimator <quotes@constructionestimator.xyz>",
+      replyTo: contractorEmail,
+      to: customerEmail,
+      subject: `Estimate ${quote.estimateNumber || quote.id || ""}`,
+      html: `
+        <h2>Your Estimate</h2>
+
+        <p>Hello ${quote.client || "Customer"},</p>
+        <p>Your estimate is attached as a PDF.</p>
+
+        <p><b>Estimate #:</b> ${quote.estimateNumber || ""}</p>
+        <p><b>Job Address:</b> ${quote.jobAddress || ""}</p>
+        <p><b>Total:</b> ${formatMoney(quote.totals.grandTotal)}</p>
+
+        ${linkHtml}
 
         <p>Thank you for choosing us!</p>
       `,
@@ -110,8 +115,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       data,
+      clientLink,
     });
-
   } catch (err) {
     console.error("SEND QUOTE ERROR:", err);
 

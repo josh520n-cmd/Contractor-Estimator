@@ -2202,3 +2202,92 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
     padding: 0 !important;
   }
 }
+
+
+
+
+/* ===== DATA STABILITY / PRINT SAFETY ===== */
+
+body[data-print="true"] .sidebar,
+body[data-print="true"] .sidebar-toggle,
+body[data-print="true"] nav,
+body[data-print="true"] aside {
+  display: none !important;
+}
+
+.no-print {
+  display: block;
+}
+
+.print-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  background: white;
+  color: #0f172a;
+}
+
+.print-document {
+  background: white;
+  padding: 32px;
+  border-radius: 14px;
+}
+
+.print-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.company-logo {
+  max-width: 120px;
+  max-height: 80px;
+  object-fit: contain;
+}
+
+.company-name {
+  font-weight: 900;
+  font-size: 20px;
+}
+
+.print-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.print-total {
+  font-size: 20px;
+  font-weight: 900;
+  border-top: 2px solid #0f172a;
+  margin-top: 12px;
+}
+
+@media print {
+  .no-print,
+  .sidebar,
+  .sidebar-toggle,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .print-page {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-document {
+    padding: 0;
+    border-radius: 0;
+  }
+}

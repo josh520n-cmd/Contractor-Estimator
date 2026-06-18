@@ -1,57 +1,133 @@
 import { useEffect, useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { normalizeQuote } from "../lib/normalizeQuote";
 
 export default function Calendar() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const saved = [];
-
-    Object.keys(localStorage).forEach((key) => {
-      if (!key.startsWith("quotes_")) return;
+    async function loadCalendarEvents() {
+      const eventList = [];
+      const seen = new Set();
 
       try {
-        const q = JSON.parse(localStorage.getItem(key));
-        const payload = q.payload || q;
+        const res = await fetch("/api/quotes");
 
-        const start =
-          payload.startDate ||
-          payload.scheduledStartDate ||
-          q.startDate;
+        if (res.ok) {
+          const quotes = await res.json();
 
-        const end =
-          payload.dueDate ||
-          payload.endDate ||
-          q.dueDate;
+          quotes.forEach((raw) => {
+            const quote = normalizeQuote(raw);
 
-        const label = q.client || payload.client || "Estimate";
+            if (!quote.id) return;
+            seen.add(quote.id);
 
-        const url = `/quotes/${q.id || key.replace("quotes_", "")}`;
+            const label =
+              quote.client ||
+              quote.estimateNumber ||
+              "Estimate";
 
-        if (start) {
-          saved.push({
-            title: `Start: ${label}`,
-            start,
-            url,
+            const url = `/quotes/${quote.id}`;
+
+            if (quote.startDate) {
+              eventList.push({
+                title: `Start: ${label}`,
+                start: quote.startDate,
+                url,
+                backgroundColor: "#2563eb",
+                borderColor: "#2563eb",
+              });
+            }
+
+            if (quote.dueDate && quote.dueDate !== quote.startDate) {
+              eventList.push({
+                title: `End: ${label}`,
+                start: quote.dueDate,
+                url,
+                backgroundColor: "#16a34a",
+                borderColor: "#16a34a",
+              });
+            }
           });
         }
+      } catch (err) {
+        console.error("Failed to load Firestore quotes for calendar:", err);
+      }
 
-        if (end) {
-          saved.push({
-            title: `End: ${label}`,
-            start: end,
-            url,
-          });
-        }
-      } catch (e) {}
-    });
+      if (typeof window !== "undefined") {
+        Object.keys(localStorage).forEach((key) => {
+          if (!key.startsWith("quotes_")) return;
 
-    setEvents(saved);
+          try {
+            const raw = JSON.parse(localStorage.getItem(key));
+            const quote = normalizeQuote({
+              id: raw.id || key.replace("quotes_", ""),
+              ...raw,
+            });
+
+            if (!quote.id || seen.has(quote.id)) return;
+
+            const label =
+              quote.client ||
+              quote.estimateNumber ||
+              "Estimate";
+
+            const url = `/quotes/${quote.id}`;
+
+            if (quote.startDate) {
+              eventList.push({
+                title: `Start: ${label}`,
+                start: quote.startDate,
+                url,
+                backgroundColor: "#2563eb",
+                borderColor: "#2563eb",
+              });
+            }
+
+            if (quote.dueDate && quote.dueDate !== quote.startDate) {
+              eventList.push({
+                title: `End: ${label}`,
+                start: quote.dueDate,
+                url,
+                backgroundColor: "#16a34a",
+                borderColor: "#16a34a",
+              });
+            }
+          } catch (err) {
+            console.error("Could not load local quote for calendar:", key, err);
+          }
+        });
+      }
+
+      setEvents(eventList);
+    }
+
+    loadCalendarEvents();
   }, []);
 
   return (
-    <div className="calendar">
+    <main className="calendar-page">
       <h1>Calendar</h1>
-      <pre>{JSON.stringify(events, null, 2)}</pre>
-    </div>
+
+      <div className="calendar-container">
+        <FullCalendar
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          events={events}
+          dayMaxEvents={3}
+          height="auto"
+          eventClick={(info) => {
+            info.jsEvent.preventDefault();
+
+            if (info.event.url) {
+              window.location.href = info.event.url;
+            }
+          }}
+        />
+      </div>
+    </main>
   );
 }
