@@ -8,9 +8,20 @@ export default function Navigation() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(true);
-  const hideSidebar =
-  router.pathname === "/print" ||
-  router.pathname.includes("/print");
+  const isAuthPage =
+  router.pathname === "/" ||
+  router.pathname === "/login" ||
+  router.pathname === "/signup";
+
+const isClientView = router.pathname.startsWith("/quotes/client");
+
+const isPrintView = router.pathname === "/print";
+
+const shouldHideSidebar = isAuthPage || isClientView || isPrintView;
+
+if (shouldHideSidebar) {
+  return null;
+}
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
