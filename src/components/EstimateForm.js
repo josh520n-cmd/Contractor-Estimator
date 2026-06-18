@@ -326,7 +326,8 @@ export default function EstimateForm({ existingQuoteId = null }) {
       dueDate
     }
     try {
-      localStorage.setItem('latestEstimate', JSON.stringify(data))
+      sessionStorage.setItem('latestEstimate', JSON.stringify(data))
+      localStorage.removeItem('latestEstimate')
       console.log('Successfully saved to localStorage for preview: latestEstimate', data)
     } catch (e) {
       console.error('Error saving to localStorage for preview: latestEstimate', e)
@@ -335,23 +336,40 @@ export default function EstimateForm({ existingQuoteId = null }) {
   }
 
   async function saveQuote() {
-    console.log('customerEmail before save:', customerEmail)
+    const currentUser = auth.currentUser
+  
+    if (!currentUser) {
+      alert('Please log in before saving quotes.')
+      router.push('/login')
+      return
+    }
+  
+    const createdAt = new Date().toISOString()
     const safeCompanySettings = { ...(companySettings || {}) }
+  
     const payload = {
+      userId: currentUser.uid,
+      ownerEmail: currentUser.email || '',
+  
       phone,
       customerEmail,
+      email: customerEmail,
       jobAddress,
       estimateNumber,
       status,
       client,
       notes,
+  
       items,
       laborTasks,
+  
       overheadPct,
       profitPct,
       wastePct,
       taxRate,
+  
       companySettings: safeCompanySettings,
+  
       totals: {
         materialTotal,
         wasteAmount,
@@ -361,25 +379,37 @@ export default function EstimateForm({ existingQuoteId = null }) {
         taxAmount,
         grandTotal
       },
+  
       startDate,
-      dueDate
+      dueDate,
+  
+      createdAt,
+      updatedAt: createdAt
     }
   
     if (editMode && existingQuoteId) {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-      const headers = { 'content-type': 'application/json' }
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      try {
+        const token = await currentUser.getIdToken()
   
-      const res = await fetch(`/api/quotes/${existingQuoteId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(payload)
-      })
+        const res = await fetch(`/api/quotes/${existingQuoteId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        })
   
-      if (res.ok) {
-        alert('Quote updated')
-        router.push(`/quotes/${existingQuoteId}`)
-      } else {
+        const result = await res.json().catch(() => ({}))
+  
+        if (res.ok) {
+          alert('Quote updated')
+          router.push(`/quotes/${existingQuoteId}`)
+        } else {
+          alert(result.error || 'Update failed')
+        }
+      } catch (e) {
+        console.error('Quote update failed:', e)
         alert('Update failed')
       }
   
@@ -387,46 +417,43 @@ export default function EstimateForm({ existingQuoteId = null }) {
     }
   
     try {
-      const createdAt = new Date().toISOString()
+      const docRef = await addDoc(collection(db, 'quotes'), payload)
   
-      console.log("JOB ADDRESS BEFORE FIRESTORE:", payload.jobAddress)
-console.log("PAYLOAD BEFORE FIRESTORE:", payload)
-
-const docRef = await addDoc(collection(db, 'quotes'), {
-  ...payload,
-  jobAddress: jobAddress || payload.jobAddress || '',
-  createdAt
-})
-  
-      const id = docRef.id
       const quoteDataToSave = {
         ...payload,
-        jobAddress: jobAddress || payload.jobAddress || '',
-        id,
-        createdAt
+        id: docRef.id,
+        quoteId: docRef.id
       }
   
-      console.log("QUOTE DATA TO SAVE:", quoteDataToSave)
+      sessionStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
+      localStorage.removeItem('latestEstimate')
   
-      console.log(
-        'COMPANY SETTINGS BEFORE SAVE:',
-        quoteDataToSave.companySettings
-      )
-      
-      localStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
-      localStorage.setItem('quotes_' + id, JSON.stringify(quoteDataToSave))
+      try {
+        localStorage.setItem('quotes_' + docRef.id, JSON.stringify(quoteDataToSave))
+      } catch {
+        // Firestore is the source of truth. Ignore browser storage overflow.
+      }
   
       alert('Quote saved successfully')
-      router.push(`/quotes/${id}`)
+      router.push(`/quotes/${docRef.id}`)
     } catch (e) {
       console.error('Firestore save failed:', e)
   
       const id = 'quote_' + Date.now()
-      const createdAt = new Date().toISOString()
-      const fallbackPayload = { ...payload, id, createdAt }
   
-      localStorage.setItem('quotes_' + id, JSON.stringify(fallbackPayload))
-      localStorage.setItem('latestEstimate', JSON.stringify(fallbackPayload))
+      const fallbackPayload = {
+        ...payload,
+        id,
+        quoteId: id
+      }
+  
+      try {
+        localStorage.setItem('quotes_' + id, JSON.stringify(fallbackPayload))
+        sessionStorage.setItem('latestEstimate', JSON.stringify(fallbackPayload))
+        localStorage.removeItem('latestEstimate')
+      } catch {
+        console.error('Fallback browser save failed')
+      }
   
       alert('Quote saved to device only. Database save failed.')
       router.push(`/quotes/${id}`)
