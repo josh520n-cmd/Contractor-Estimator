@@ -8,32 +8,30 @@ export default function Navigation() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(true);
-  const isAuthPage =
-  router.pathname === "/" ||
-  router.pathname === "/login" ||
-  router.pathname === "/signup";
-
-const isClientView = router.pathname.startsWith("/quotes/client");
-
-const isPrintView = router.pathname === "/print";
-
-const shouldHideSidebar = isAuthPage || isClientView || isPrintView;
-
-if (shouldHideSidebar) {
-  return null;
-}
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, []);
 
+  const isAuthPage =
+    router.pathname === "/" ||
+    router.pathname === "/login" ||
+    router.pathname === "/signup";
+
+  const isClientView = router.pathname.startsWith("/quotes/client");
+  const isPrintView = router.pathname === "/print";
+
+  const shouldHideSidebar = isAuthPage || isClientView || isPrintView;
+
   async function handleSignOut() {
     await signOut(auth);
     router.push("/login");
   }
 
-
+  if (shouldHideSidebar) {
+    return null;
+  }
 
   return (
     <>
@@ -47,7 +45,12 @@ if (shouldHideSidebar) {
 
       <aside className={`sidebar ${open ? "open" : "closed"}`}>
         <div className="sidebar-logo">
-        <img src="/cee-logo.png" alt="Contractor Estimator Logo" className="sidebar-logo-img" />
+          <img
+            src="/cee-logo.png"
+            alt="Contractor Estimator Logo"
+            className="sidebar-logo-img"
+          />
+
           <div className="logo-text">
             <strong>Contractor Estimator</strong>
             <span>Build smarter estimates</span>
@@ -55,7 +58,10 @@ if (shouldHideSidebar) {
         </div>
 
         <nav className="sidebar-nav">
-          <Link href="/estimate" className={router.pathname === "/" ? "active" : ""}>
+          <Link
+            href="/estimate"
+            className={router.pathname === "/estimate" ? "active" : ""}
+          >
             New Estimate
           </Link>
 
@@ -72,34 +78,35 @@ if (shouldHideSidebar) {
           >
             Scheduler
           </Link>
+
           <Link
-  href="/settings"
-  className={router.pathname === "/settings" ? "active" : ""}
->
-  Company Settings
-</Link>
+            href="/settings"
+            className={router.pathname === "/settings" ? "active" : ""}
+          >
+            Company Settings
+          </Link>
         </nav>
 
         <div className="sidebar-user">
-  {user ? (
-    <>
-      <div className="signed-in-label">
-        <span className="signed-in-check">✓</span>
-        <span>Signed in as</span>
-      </div>
+          {user ? (
+            <>
+              <div className="signed-in-label">
+                <span className="signed-in-check">✓</span>
+                <span>Signed in as</span>
+              </div>
 
-      <div className="user-email">
-        {user.displayName || user.email}
-      </div>
+              <div className="user-email">
+                {user.displayName || user.email}
+              </div>
 
-      <button onClick={handleSignOut} type="button">
-        Sign Out
-      </button>
-    </>
-  ) : (
-    <Link href="/login">Sign In</Link>
-  )}
-</div>
+              <button onClick={handleSignOut} type="button">
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <Link href="/login">Sign In</Link>
+          )}
+        </div>
       </aside>
     </>
   );
