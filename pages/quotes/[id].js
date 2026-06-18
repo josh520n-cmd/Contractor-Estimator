@@ -52,11 +52,50 @@ export default function QuoteDetailsPage() {
     loadQuote();
   }, [router.isReady, id]);
 
+  function getPrintableQuote(q) {
+    return {
+      id: q.id || "",
+      quoteId: q.quoteId || q.id || "",
+      estimateNumber: q.estimateNumber || "",
+      client: q.client || "",
+      phone: q.phone || "",
+      customerEmail: q.customerEmail || q.email || "",
+      email: q.customerEmail || q.email || "",
+      jobAddress: q.jobAddress || "",
+      status: q.status || "Draft",
+      notes: q.notes || "",
+      startDate: q.startDate || "",
+      dueDate: q.dueDate || "",
+      overheadPct: q.overheadPct || 0,
+      profitPct: q.profitPct || 0,
+      wastePct: q.wastePct || 0,
+      taxRate: q.taxRate || 0,
+      items: q.items || [],
+      laborTasks: q.laborTasks || [],
+      totals: q.totals || {},
+      companySettings: {
+        company_name: q.companySettings?.company_name || "",
+        company_address: q.companySettings?.company_address || "",
+        company_phone: q.companySettings?.company_phone || "",
+        logo_data: q.companySettings?.logo_data || "",
+      },
+    };
+  }
+  
   function goToPrint() {
     if (!quote) return;
-
-    localStorage.setItem("latestEstimate", JSON.stringify(quote));
-    router.push("/print");
+  
+    try {
+      const printableQuote = getPrintableQuote(quote);
+  
+      sessionStorage.setItem("latestEstimate", JSON.stringify(printableQuote));
+      localStorage.removeItem("latestEstimate");
+  
+      router.push("/print");
+    } catch (err) {
+      console.error("Print storage error:", err);
+      alert("Could not prepare this estimate for printing. Try clearing old saved browser data.");
+    }
   }
 
   function goToEdit() {

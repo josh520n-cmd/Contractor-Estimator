@@ -11,7 +11,9 @@ export default function Print() {
     document.body.setAttribute("data-print", "true");
 
     try {
-      const raw = localStorage.getItem("latestEstimate");
+      const raw =
+  sessionStorage.getItem("latestEstimate") ||
+  localStorage.getItem("latestEstimate");
       if (raw) {
         setQuote(normalizeQuote(JSON.parse(raw)));
       }
