@@ -7,7 +7,9 @@ function formatMoney(n) {
 
 export default function ClientQuoteView() {
   const router = useRouter();
-  const { id } = router.query;
+
+  const { id, token } = router.query;
+  const isPublicClientView = !!token;
 
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,15 +19,24 @@ export default function ClientQuoteView() {
     if (!id) return;
 
     setLoading(true);
+    setError("");
 
     try {
-      const res = await fetch(`/api/quotes/${id}`);
+      let url;
+
+      if (isPublicClientView) {
+        url = `/api/client-quote?id=${id}&token=${token}`;
+      } else {
+        url = `/api/quotes/${id}`;
+      }
+
+      const res = await fetch(url);
+      const data = await res.json();
 
       if (!res.ok) {
         throw new Error("Quote not found");
       }
 
-      const data = await res.json();
       setQuote(data);
 
     } catch (err) {
@@ -38,7 +49,7 @@ export default function ClientQuoteView() {
 
   useEffect(() => {
     loadQuote();
-  }, [id]);
+  }, [id, token]);
 
   if (loading) {
     return <main className="client-page">Loading estimate...</main>;
@@ -54,8 +65,8 @@ export default function ClientQuoteView() {
 
   const payload = quote.payload || quote;
 
-  const items = payload.items || [];
-  const labor = payload.laborTasks || [];
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  const labor = Array.isArray(payload.laborTasks) ? payload.laborTasks : [];
   const totals = payload.totals || {};
 
   const client = quote.client || payload.client || "Client";
@@ -100,4 +111,3 @@ export default function ClientQuoteView() {
     </main>
   );
 }
-
