@@ -164,6 +164,24 @@ function QuoteDetails({ id }) {
         </div>
 
         <div className="quote-overview-card">
+  <span>Start Date</span>
+  <strong>
+    {quoteData.startDate
+      ? new Date(quoteData.startDate).toLocaleDateString()
+      : "Not set"}
+  </strong>
+</div>
+
+<div className="quote-overview-card">
+  <span>End Date</span>
+  <strong>
+    {quoteData.dueDate
+      ? new Date(quoteData.dueDate).toLocaleDateString()
+      : "Not set"}
+  </strong>
+</div>
+
+        <div className="quote-overview-card">
           <span>Status</span>
           <strong>{status}</strong>
         </div>

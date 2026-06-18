@@ -8,6 +8,9 @@ export default function Navigation() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(true);
+  const hideSidebar =
+  router.pathname === "/print" ||
+  router.pathname.includes("/print");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -19,13 +22,7 @@ export default function Navigation() {
     router.push("/login");
   }
 
-  if (
-    router.pathname === "/" ||
-    router.pathname === "/login" ||
-    router.pathname === "/signup"
-  ) {
-    return null;
-  }
+
 
   return (
     <>

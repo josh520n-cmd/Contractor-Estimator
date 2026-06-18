@@ -2181,3 +2181,24 @@ button.btn-delete { background:#dc2626; color:white; border:none; }
   font-size: 28px;
   font-weight: 900;
 }
+
+
+@media print {
+  .sidebar,
+  .sidebar-toggle,
+  nav,
+  aside {
+    display: none !important;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+
+  .quote-detail-page {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
