@@ -1,55 +1,50 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
-function formatMoney(n) {
-  return "$" + Number(n || 0).toFixed(2);
-}
+import {
+  normalizeQuote,
+  formatMoney,
+  formatDate,
+} from "../../../lib/normalizeQuote";
 
 export default function ClientQuoteView() {
   const router = useRouter();
-
   const { id, token } = router.query;
-  const isPublicClientView = !!token;
 
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadQuote = async () => {
-    if (!id) return;
+  async function loadQuote() {
+    if (!router.isReady || !id) return;
 
     setLoading(true);
     setError("");
 
     try {
-      let url;
-
-      if (isPublicClientView) {
-        url = `/api/client-quote?id=${id}&token=${token}`;
-      } else {
-        url = `/api/quotes/${id}`;
-      }
+      const url = token
+        ? `/api/client-quote?id=${id}&token=${token}`
+        : `/api/quotes/${id}`;
 
       const res = await fetch(url);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error("Quote not found");
+        throw new Error(data.error || "Quote not found");
       }
 
-      setQuote(data);
-
+      setQuote(normalizeQuote(data));
     } catch (err) {
-      console.error(err);
+      console.error("Client quote load error:", err);
       setError("This estimate is not available.");
+      setQuote(null);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
     loadQuote();
-  }, [id, token]);
+  }, [router.isReady, id, token]);
 
   if (loading) {
     return <main className="client-page">Loading estimate...</main>;
@@ -63,51 +58,115 @@ export default function ClientQuoteView() {
     return <main className="client-page">No estimate found.</main>;
   }
 
-  const payload = quote.payload || quote;
-
-  const items = Array.isArray(payload.items) ? payload.items : [];
-  const labor = Array.isArray(payload.laborTasks) ? payload.laborTasks : [];
-  const totals = payload.totals || {};
-
-  const client = quote.client || payload.client || "Client";
-  const address = quote.jobAddress || payload.jobAddress || "";
-
   return (
     <main className="client-page">
-
       <header className="client-header">
+        {quote.companySettings?.logo_data && (
+          <img
+            src={quote.companySettings.logo_data}
+            alt="Company Logo"
+            className="client-logo"
+          />
+        )}
+
         <h1>Estimate</h1>
-        <p>{client}</p>
-        {address && <p>{address}</p>}
+
+        <p>{quote.client || "Client"}</p>
+
+        {quote.jobAddress && <p>{quote.jobAddress}</p>}
+
+        {quote.startDate && (
+          <p>Start: {formatDate(quote.startDate)}</p>
+        )}
+
+        {quote.dueDate && (
+          <p>End: {formatDate(quote.dueDate)}</p>
+        )}
       </header>
 
       <section className="client-section">
         <h2>Items</h2>
 
-        {items.length ? items.map((i, idx) => (
-          <div key={idx} className="client-row">
-            <span>{i.name || "Item"}</span>
-            <strong>{formatMoney(i.total || 0)}</strong>
-          </div>
-        )) : <p>No items listed.</p>}
+        {quote.items.length ? (
+          quote.items.map((item, index) => (
+            <div key={index} className="client-row">
+              <span>
+                {item.name}
+                {item.qty ? ` — Qty ${item.qty}` : ""}
+              </span>
+
+              <strong>{formatMoney(item.total)}</strong>
+            </div>
+          ))
+        ) : (
+          <p>No items listed.</p>
+        )}
       </section>
 
       <section className="client-section">
         <h2>Labor</h2>
 
-        {labor.length ? labor.map((l, idx) => (
-          <div key={idx} className="client-row">
-            <span>{l.name || "Labor"}</span>
-            <strong>{formatMoney(l.total || 0)}</strong>
-          </div>
-        )) : <p>No labor listed.</p>}
+        {quote.laborTasks.length ? (
+          quote.laborTasks.map((task, index) => (
+            <div key={index} className="client-row">
+              <span>
+                {task.name}
+                {task.hours ? ` — ${task.hours} hrs` : ""}
+              </span>
+
+              <strong>{formatMoney(task.total)}</strong>
+            </div>
+          ))
+        ) : (
+          <p>No labor listed.</p>
+        )}
+      </section>
+
+      <section className="client-section">
+        <h2>Summary</h2>
+
+        <div className="client-row">
+          <span>Materials</span>
+          <strong>{formatMoney(quote.totals.materialTotal)}</strong>
+        </div>
+
+        <div className="client-row">
+          <span>Waste Buffer</span>
+          <strong>{formatMoney(quote.totals.wasteAmount)}</strong>
+        </div>
+
+        <div className="client-row">
+          <span>Labor</span>
+          <strong>{formatMoney(quote.totals.laborTotal)}</strong>
+        </div>
+
+        <div className="client-row">
+          <span>Overhead</span>
+          <strong>{formatMoney(quote.totals.overheadAmount)}</strong>
+        </div>
+
+        <div className="client-row">
+          <span>Profit</span>
+          <strong>{formatMoney(quote.totals.profitAmount)}</strong>
+        </div>
+
+        <div className="client-row">
+          <span>Tax</span>
+          <strong>{formatMoney(quote.totals.taxAmount)}</strong>
+        </div>
       </section>
 
       <section className="client-total">
         <h2>Total</h2>
-        <strong>{formatMoney(totals.grandTotal || 0)}</strong>
+        <strong>{formatMoney(quote.totals.grandTotal)}</strong>
       </section>
 
+      {quote.notes && (
+        <section className="client-section">
+          <h2>Notes</h2>
+          <p>{quote.notes}</p>
+        </section>
+      )}
     </main>
   );
 }
