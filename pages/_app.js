@@ -1,9 +1,5 @@
-import '../styles/globals.css'
-import dynamic from 'next/dynamic'
-
-const Navigation = dynamic(() => import('../src/components/Navigation'), { ssr: false })
-
-// FullCalendar CSS imports have been moved to the component that uses FullCalendar
+import "../styles/globals.css";
+import Navigation from "../src/components/Navigation";
 
 export default function App({ Component, pageProps }) {
   return (
@@ -11,5 +7,5 @@ export default function App({ Component, pageProps }) {
       <Navigation />
       <Component {...pageProps} />
     </>
-  )
+  );
 }
