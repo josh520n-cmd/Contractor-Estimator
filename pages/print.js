@@ -212,11 +212,43 @@ export default function Print() {
         </section>
 
         {quote.notes && (
-          <section>
-            <h2>Notes</h2>
-            <p>{quote.notes}</p>
-          </section>
-        )}
+  <section>
+    <h2>Notes</h2>
+    <p>{quote.notes}</p>
+  </section>
+)}
+
+<section className="work-authorization">
+          <h2>Work Authorization Agreement</h2>
+        
+          <p>
+            By signing below, the customer authorizes the contractor to perform the work
+            described in this estimate. The customer understands that this estimate is
+            based on the information available at the time it was prepared and that
+            additional work, unforeseen conditions, change orders, material price changes,
+            permit requirements, or customer-requested revisions may affect the final cost.
+          </p>
+        
+          <p>
+            This estimate is not a final contract unless accepted and authorized by both
+            parties. Payment terms, project scheduling, material availability, and final
+            scope of work should be confirmed before work begins.
+          </p>
+        
+          <div className="signature-grid">
+            <div className="signature-box">
+              <div className="signature-line"></div>
+              <p>Customer Signature</p>
+              <span>Date: ____________________</span>
+            </div>
+        
+            <div className="signature-box">
+              <div className="signature-line"></div>
+              <p>Contractor Signature</p>
+              <span>Date: ____________________</span>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
