@@ -89,9 +89,20 @@ export default function EstimateForm({ existingQuoteId = null }) {
     async function loadNextEstimateNumber() {
       let nextNumber = ''
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        const res = await fetch('/api/quotes', { headers })
+        const user = auth.currentUser
+
+        if (!user) {
+          console.warn("No Firebase user found for next estimate number")
+          return
+        }
+        
+        const token = await user.getIdToken()
+        
+        const res = await fetch('/api/quotes', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
         if (res.ok) {
           const quotes = await res.json()
           nextNumber = nextEstimateNumberFromValues(quotes.map(q => q.estimateNumber))
@@ -151,12 +162,33 @@ export default function EstimateForm({ existingQuoteId = null }) {
     setEditMode(true)
   }
 
+  async function getFirebaseHeaders(includeJson = false) {
+    const user = auth.currentUser
+  
+    if (!user) {
+      return includeJson
+        ? { 'Content-Type': 'application/json' }
+        : {}
+    }
+  
+    const token = await user.getIdToken()
+  
+    return includeJson
+      ? {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      : {
+          Authorization: `Bearer ${token}`
+        }
+  }
+
   async function loadMaterialPresets() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = {}
-    if (token) headers['Authorization'] = `Bearer ${token}`
     try {
+      const headers = await getFirebaseHeaders(false)
+  
       const res = await fetch('/api/presets/materials', { headers })
+  
       if (res.ok) {
         setMaterialPresets(await res.json())
       }
@@ -201,18 +233,23 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   async function saveMaterialPreset() {
     if (!newPresetName) return alert('Enter preset name')
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = { 'content-type': 'application/json' }
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    
+  
     const payload = {
       name: newPresetName,
       description: newPresetDesc,
       qty: Number(newPresetQty),
       unit_price: Number(newPresetPrice)
     }
+  
     try {
-      const res = await fetch('/api/presets/materials', { method: 'POST', headers, body: JSON.stringify(payload) })
+      const headers = await getFirebaseHeaders(true)
+  
+      const res = await fetch('/api/presets/materials', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      })
+  
       if (res.ok) {
         setNewPresetName('')
         setNewPresetDesc('')
@@ -220,14 +257,11 @@ export default function EstimateForm({ existingQuoteId = null }) {
         setNewPresetPrice(0)
         loadMaterialPresets()
       } else {
-        alert('Failed to save preset (will try localStorage)')
+        alert('Failed to save preset')
       }
     } catch (e) {
-      alert('Preset saved to device (database unavailable)')
-      setNewPresetName('')
-      setNewPresetDesc('')
-      setNewPresetQty(1)
-      setNewPresetPrice(0)
+      console.error('Preset save failed:', e)
+      alert('Preset save failed')
     }
   }
 
@@ -240,24 +274,29 @@ export default function EstimateForm({ existingQuoteId = null }) {
   }
 
   async function saveCompanySettings() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = { 'content-type': 'application/json' }
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    
     const payload = {
       ...companySettings,
       tax_rate: Number(taxRate)
     }
+  
     try {
-      const res = await fetch('/api/settings/company', { method: 'PUT', headers, body: JSON.stringify(payload) })
+      const headers = await getFirebaseHeaders(true)
+  
+      const res = await fetch('/api/settings/company', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload)
+      })
+  
       if (res.ok) {
         alert('Settings saved')
         loadCompanySettings()
       } else {
-        alert('Failed to save settings (will try localStorage)')
+        alert('Failed to save settings')
       }
     } catch (e) {
-      alert('Settings saved to device (database unavailable)')
+      console.error('Settings save failed:', e)
+      alert('Settings save failed')
     }
   }
 
@@ -461,13 +500,14 @@ export default function EstimateForm({ existingQuoteId = null }) {
   }
   
   async function loadTemplates() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = {}
-    if (token) headers['Authorization'] = `Bearer ${token}`
-  
     try {
+      const headers = await getFirebaseHeaders(false)
+  
       const res = await fetch('/api/templates', { headers })
-      if (res.ok) setTemplates(await res.json())
+  
+      if (res.ok) {
+        setTemplates(await res.json())
+      }
     } catch (e) {
       console.log('Failed to load templates:', e.message)
     }
@@ -477,16 +517,14 @@ export default function EstimateForm({ existingQuoteId = null }) {
     const name = prompt('Template name')
     if (!name) return
   
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    const headers = { 'content-type': 'application/json' }
-    if (token) headers['Authorization'] = `Bearer ${token}`
-  
     const payload = {
       name,
       data: { items, laborTasks, overheadPct, profitPct, wastePct }
     }
   
     try {
+      const headers = await getFirebaseHeaders(true)
+  
       const res = await fetch('/api/templates', {
         method: 'POST',
         headers,
@@ -500,28 +538,38 @@ export default function EstimateForm({ existingQuoteId = null }) {
         alert('Failed to save template')
       }
     } catch (e) {
-      alert('Template saved to device only')
+      console.error('Template save failed:', e)
+      alert('Template save failed')
     }
   }
   
   async function applyTemplate(id) {
-    const res = await fetch(`/api/templates/${id}`)
-    if (!res.ok) return
+    try {
+      const headers = await getFirebaseHeaders(false)
   
-    const json = await res.json()
-    const d = json.data || {}
+      const res = await fetch(`/api/templates/${id}`, { headers })
   
-    setItems(d.items || [])
+      if (!res.ok) return
   
-    if (Array.isArray(d.laborTasks) && d.laborTasks.length) {
-      setLaborTasks(d.laborTasks)
-    } else {
-      setLaborTasks([{ desc: 'Labor', hours: d.laborHours || 0, rate: d.laborRate || 0 }])
+      const json = await res.json()
+      const d = json.data || {}
+  
+      setItems(d.items || [])
+  
+      if (Array.isArray(d.laborTasks) && d.laborTasks.length) {
+        setLaborTasks(d.laborTasks)
+      } else {
+        setLaborTasks([
+          { desc: 'Labor', hours: d.laborHours || 0, rate: d.laborRate || 0 }
+        ])
+      }
+  
+      setOverheadPct(d.overheadPct || 10)
+      setProfitPct(d.profitPct || 10)
+      setWastePct(d.wastePct || 5)
+    } catch (e) {
+      console.error('Apply template failed:', e)
     }
-  
-    setOverheadPct(d.overheadPct || 10)
-    setProfitPct(d.profitPct || 10)
-    setWastePct(d.wastePct || 5)
   }
   
   return (
