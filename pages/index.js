@@ -80,7 +80,9 @@ export default function LandingPage() {
           <h2>Pro</h2>
           <p className="price">$39/month</p>
           <p>Unlimited estimates, branded PDFs, email quotes, templates, scheduler, and backups.</p>
-          <Link href="/signup" className="primary">Start Pro</Link>
+          <Link href="/signup?plan=pro" className="primary">
+  Start Pro
+</Link>
         </div>
       </section>
     </main>
