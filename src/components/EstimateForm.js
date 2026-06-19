@@ -381,6 +381,52 @@ export default function EstimateForm({ existingQuoteId = null }) {
     }
   }
 
+  async function startCheckout() {
+    try {
+      const headers = await getFirebaseHeaders(true)
+  
+      const res = await fetch('/api/billing/create-checkout-session', {
+        method: 'POST',
+        headers
+      })
+  
+      const data = await res.json().catch(() => ({}))
+  
+      if (!res.ok || !data.url) {
+        alert(data.error || 'Unable to start checkout.')
+        return
+      }
+  
+      window.location.href = data.url
+    } catch (err) {
+      console.error('Checkout start failed:', err)
+      alert('Unable to start checkout.')
+    }
+  }
+  
+  async function openBillingPortal() {
+    try {
+      const headers = await getFirebaseHeaders(true)
+  
+      const res = await fetch('/api/billing/create-portal-session', {
+        method: 'POST',
+        headers
+      })
+  
+      const data = await res.json().catch(() => ({}))
+  
+      if (!res.ok || !data.url) {
+        alert(data.error || 'Unable to open billing portal.')
+        return
+      }
+  
+      window.location.href = data.url
+    } catch (err) {
+      console.error('Billing portal failed:', err)
+      alert('Unable to open billing portal.')
+    }
+  }
+
   async function saveQuote() {
     const currentUser = auth.currentUser
   
@@ -465,8 +511,17 @@ export default function EstimateForm({ existingQuoteId = null }) {
   
       if (!res.ok) {
         if (res.status === 402 || result.code === 'FREE_LIMIT_REACHED') {
-          alert(result.error || 'Free quote limit reached. Upgrade required.')
           await loadUsageStatus(currentUser)
+
+          const upgradeNow = confirm(
+            (result.error || 'Free quote limit reached.') +
+              '\n\nUpgrade to Pro for unlimited quotes at $39/month?'
+          )
+          
+          if (upgradeNow) {
+            await startCheckout()
+          }
+          
           return
         }
   
@@ -755,19 +810,34 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
       {usageStatus && !usageStatus.unlimited && (
   <div className="usage-banner">
-    <strong>Free plan:</strong>{" "}
-    {usageStatus.count} / {usageStatus.freeLimit} quotes used.
-    {" "}
-    {usageStatus.remaining > 0
-      ? `${usageStatus.remaining} remaining.`
-      : "Upgrade required to create more quotes."}
+    <div>
+      <strong>Free plan:</strong>{" "}
+      {usageStatus.count} / {usageStatus.freeLimit} quotes used.{" "}
+      {usageStatus.remaining > 0
+        ? `${usageStatus.remaining} remaining.`
+        : "Upgrade required to create more quotes."}
+    </div>
+
+    <button type="button" className="btn-save" onClick={startCheckout}>
+      Upgrade to Pro — $39/mo
+    </button>
   </div>
 )}
 
 {usageStatus?.unlimited && (
   <div className="usage-banner">
-    <strong>{usageStatus.plan === "owner" ? "Owner account" : "Paid plan"}:</strong>{" "}
-    Unlimited quotes enabled.
+    <div>
+      <strong>
+        {usageStatus.plan === "owner" ? "Owner account" : "Paid plan"}:
+      </strong>{" "}
+      Unlimited quotes enabled.
+    </div>
+
+    {usageStatus.plan !== "owner" && (
+      <button type="button" className="secondary" onClick={openBillingPortal}>
+        Manage Billing
+      </button>
+    )}
   </div>
 )}
 

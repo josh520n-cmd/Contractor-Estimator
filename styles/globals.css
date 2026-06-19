@@ -2307,3 +2307,25 @@ body[data-print="true"] aside {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+
+
+.usage-banner {
+  margin: 24px 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  font-weight: 700;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.btn-save:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
