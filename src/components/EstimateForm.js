@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { db, auth } from '../../lib/firebase'
-import { collection, addDoc } from 'firebase/firestore'
+import { auth } from '../../lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 function formatMoney(n) {
   return '$' + Number(n || 0).toFixed(2)
@@ -63,7 +62,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
   // Templates
   const [templates, setTemplates] = useState([])
-
+  const [usageStatus, setUsageStatus] = useState(null)
   // Load existing quote if editMode
   useEffect(() => {
     if (!router.isReady) return
@@ -75,6 +74,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
   
       if (user) {
         await loadCompanySettings(user)
+        await loadUsageStatus(user)
       }
   
       loadMaterialPresets()
@@ -85,59 +85,41 @@ export default function EstimateForm({ existingQuoteId = null }) {
   }, [existingQuoteId, router.isReady])
   useEffect(() => {
     if (existingQuoteId || !router.isReady) return
-
-    async function loadNextEstimateNumber() {
+  
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (!user) return
+  
       let nextNumber = ''
+  
       try {
-        const user = auth.currentUser
-
-        if (!user) {
-          console.warn("No Firebase user found for next estimate number")
-          return
-        }
-        
         const token = await user.getIdToken()
-        
+  
         const res = await fetch('/api/quotes', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         })
+  
         if (res.ok) {
           const quotes = await res.json()
-          nextNumber = nextEstimateNumberFromValues(quotes.map(q => q.estimateNumber))
+  
+          nextNumber = nextEstimateNumberFromValues(
+            quotes.map(q => q.estimateNumber)
+          )
         }
       } catch (e) {
         console.warn('Failed to load quote numbers from API:', e.message)
       }
-
-      if (!nextNumber && typeof window !== 'undefined') {
-        const list = Object.values(localStorage)
-          .filter((value) => {
-            try {
-              return value && JSON.parse(value)
-            } catch {
-              return false
-            }
-          })
-          .map((value) => {
-            try {
-              const parsed = JSON.parse(value)
-              return parsed.estimateNumber || (parsed.payload && parsed.payload.estimateNumber) || ''
-            } catch {
-              return ''
-            }
-          })
-        nextNumber = nextEstimateNumberFromValues(list)
-      }
-
+  
       if (nextNumber) {
         setEstimateNumber(nextNumber)
       }
-    }
-
-    loadNextEstimateNumber()
+    })
+  
+    return () => unsub()
   }, [existingQuoteId, router.isReady])
+
+
 
   async function loadQuote(id) {
     const res = await fetch(`/api/quotes/${id}`)
@@ -367,11 +349,36 @@ export default function EstimateForm({ existingQuoteId = null }) {
     try {
       sessionStorage.setItem('latestEstimate', JSON.stringify(data))
       localStorage.removeItem('latestEstimate')
-      console.log('Successfully saved to localStorage for preview: latestEstimate', data)
+      console.log('Successfully saved to sessionStorage for preview: latestEstimate', data)
     } catch (e) {
       console.error('Error saving to localStorage for preview: latestEstimate', e)
     }
     router.push('/print')
+  }
+
+  async function loadUsageStatus(user = auth.currentUser) {
+    if (!user) {
+      setUsageStatus(null)
+      return
+    }
+  
+    try {
+      const token = await user.getIdToken()
+  
+      const res = await fetch('/api/usage/status', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+  
+      const data = await res.json().catch(() => null)
+  
+      if (res.ok) {
+        setUsageStatus(data)
+      }
+    } catch (err) {
+      console.warn('Failed to load usage status:', err.message)
+    }
   }
 
   async function saveQuote() {
@@ -426,16 +433,13 @@ export default function EstimateForm({ existingQuoteId = null }) {
       updatedAt: createdAt
     }
   
-    if (editMode && existingQuoteId) {
-      try {
-        const token = await currentUser.getIdToken()
+    try {
+      const headers = await getFirebaseHeaders(true)
   
+      if (editMode && existingQuoteId) {
         const res = await fetch(`/api/quotes/${existingQuoteId}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
+          headers,
           body: JSON.stringify(payload)
         })
   
@@ -447,55 +451,45 @@ export default function EstimateForm({ existingQuoteId = null }) {
         } else {
           alert(result.error || 'Update failed')
         }
-      } catch (e) {
-        console.error('Quote update failed:', e)
-        alert('Update failed')
+  
+        return
       }
   
-      return
-    }
+      const res = await fetch('/api/quotes', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      })
   
-    try {
-      const docRef = await addDoc(collection(db, 'quotes'), payload)
+      const result = await res.json().catch(() => ({}))
   
-      const quoteDataToSave = {
-        ...payload,
-        id: docRef.id,
-        quoteId: docRef.id
+      if (!res.ok) {
+        if (res.status === 402 || result.code === 'FREE_LIMIT_REACHED') {
+          alert(result.error || 'Free quote limit reached. Upgrade required.')
+          await loadUsageStatus(currentUser)
+          return
+        }
+  
+        alert(result.error || 'Quote save failed')
+        return
       }
   
-      sessionStorage.setItem('latestEstimate', JSON.stringify(quoteDataToSave))
+      sessionStorage.setItem('latestEstimate', JSON.stringify(result))
       localStorage.removeItem('latestEstimate')
   
       try {
-        localStorage.setItem('quotes_' + docRef.id, JSON.stringify(quoteDataToSave))
+        localStorage.setItem('quotes_' + result.id, JSON.stringify(result))
       } catch {
-        // Firestore is the source of truth. Ignore browser storage overflow.
+        // Firestore/API is source of truth. Ignore browser storage overflow.
       }
+  
+      await loadUsageStatus(currentUser)
   
       alert('Quote saved successfully')
-      router.push(`/quotes/${docRef.id}`)
+      router.push(`/quotes/${result.id}`)
     } catch (e) {
-      console.error('Firestore save failed:', e)
-  
-      const id = 'quote_' + Date.now()
-  
-      const fallbackPayload = {
-        ...payload,
-        id,
-        quoteId: id
-      }
-  
-      try {
-        localStorage.setItem('quotes_' + id, JSON.stringify(fallbackPayload))
-        sessionStorage.setItem('latestEstimate', JSON.stringify(fallbackPayload))
-        localStorage.removeItem('latestEstimate')
-      } catch {
-        console.error('Fallback browser save failed')
-      }
-  
-      alert('Quote saved to device only. Database save failed.')
-      router.push(`/quotes/${id}`)
+      console.error('Quote save failed:', e)
+      alert(e.message || 'Quote save failed')
     }
   }
   
@@ -759,10 +753,37 @@ export default function EstimateForm({ existingQuoteId = null }) {
         </div>
       </details>
 
-      <section className="actions">
-      <button onClick={previewQuote} className="btn-print">Preview / Print</button>
-      <button onClick={saveQuote} className="btn-save">{editMode ? 'Update Quote' : 'Save Quote'}</button>
-      </section>
+      {usageStatus && !usageStatus.unlimited && (
+  <div className="usage-banner">
+    <strong>Free plan:</strong>{" "}
+    {usageStatus.count} / {usageStatus.freeLimit} quotes used.
+    {" "}
+    {usageStatus.remaining > 0
+      ? `${usageStatus.remaining} remaining.`
+      : "Upgrade required to create more quotes."}
+  </div>
+)}
+
+{usageStatus?.unlimited && (
+  <div className="usage-banner">
+    <strong>{usageStatus.plan === "owner" ? "Owner account" : "Paid plan"}:</strong>{" "}
+    Unlimited quotes enabled.
+  </div>
+)}
+
+<section className="actions">
+  <button onClick={previewQuote} className="btn-print">
+    Preview / Print
+  </button>
+
+  <button
+    onClick={saveQuote}
+    className="btn-save"
+    disabled={!editMode && usageStatus && usageStatus.canCreate === false}
+  >
+    {editMode ? 'Update Quote' : 'Save Quote'}
+  </button>
+</section>
     </div>
   )
 }

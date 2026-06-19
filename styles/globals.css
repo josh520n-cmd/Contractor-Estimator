@@ -2291,3 +2291,19 @@ body[data-print="true"] aside {
     border-radius: 0;
   }
 }
+
+
+.usage-banner {
+  margin: 24px 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.btn-save:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
