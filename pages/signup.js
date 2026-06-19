@@ -12,30 +12,64 @@ export default function Signup() {
   const [name, setName] = useState("");
 
   async function submit(e) {
-    e.preventDefault();
-
+    e.preventDefault()
+  
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
-      );
-
-      const user = userCredential.user;
-
-      if (name) {
-        await updateProfile(user, { displayName: name });
-      }
-
-      await setDoc(doc(db, "users", user.uid), {
-        name,
+      )
+  
+      await updateProfile(userCredential.user, {
+        displayName: name || email
+      })
+  
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        name: name || "",
         email,
+        plan: "free",
+        subscriptionStatus: "free",
         createdAt: serverTimestamp(),
-      });
+        updatedAt: serverTimestamp()
+      }, { merge: true })
+  
+      if (router.query.plan === "pro") {
+        await startCheckout(userCredential.user)
+        return
+      }
+  
+      router.push("/estimate")
+    } catch (error) {
+      alert(error.message || "Signup failed")
+    }
+  }
 
-      router.push("/settings");
+  async function startCheckout(user) {
+    try {
+      const token = await user.getIdToken()
+  
+      const res = await fetch("/api/billing/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      })
+  
+      const data = await res.json().catch(() => ({}))
+  
+      if (!res.ok || !data.url) {
+        alert(data.error || "Account created, but checkout could not start.")
+        router.push("/estimate")
+        return
+      }
+  
+      window.location.href = data.url
     } catch (err) {
-      alert(err.message || "Signup failed");
+      console.error("Checkout after signup failed:", err)
+      alert("Account created, but checkout could not start.")
+      router.push("/estimate")
     }
   }
 
