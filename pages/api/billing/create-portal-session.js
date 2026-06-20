@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     }
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL || "https://constructionestimator.xyz";
+      process.env.NEXT_PUBLIC_BASE_URL || "https://www.constructionestimator.xyz";
 
     const session = await stripe.billingPortal.sessions.create({
       customer: userData.stripeCustomerId,
