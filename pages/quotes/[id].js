@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 import {
   normalizeQuote,
   formatMoney,
@@ -23,21 +25,34 @@ export default function QuoteDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadQuote() {
+  async function loadQuote(firebaseUser = auth.currentUser) {
     if (!router.isReady || !id) return;
-
+  
+    if (!firebaseUser) {
+      setLoading(false);
+      setError("You must be signed in.");
+      setQuote(null);
+      return;
+    }
+  
     setLoading(true);
     setError("");
-
+  
     try {
-      const res = await fetchWithTimeout(`/api/quotes/${id}`);
-
+      const token = await firebaseUser.getIdToken();
+  
+      const res = await fetchWithTimeout(`/api/quotes/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
       const data = await res.json().catch(() => ({}));
-
+  
       if (!res.ok) {
         throw new Error(data.error || "Quote could not be loaded");
       }
-
+  
       setQuote(normalizeQuote(data));
     } catch (err) {
       console.error("QUOTE PAGE LOAD ERROR:", err);
@@ -47,9 +62,15 @@ export default function QuoteDetailsPage() {
       setLoading(false);
     }
   }
-
+  
   useEffect(() => {
-    loadQuote();
+    if (!router.isReady || !id) return;
+  
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      await loadQuote(firebaseUser);
+    });
+  
+    return () => unsubscribe();
   }, [router.isReady, id]);
 
   function getPrintableQuote(q) {
@@ -120,7 +141,7 @@ export default function QuoteDetailsPage() {
           <h1>Estimate failed to load</h1>
           <p>{error}</p>
 
-          <button onClick={loadQuote} className="quote-action-primary">
+          <button onClick={() => loadQuote()} className="quote-action-primary">
             Try Again
           </button>
 
