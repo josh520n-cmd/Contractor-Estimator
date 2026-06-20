@@ -1,47 +1,72 @@
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../lib/firebase";
+import { adminDb } from "../../lib/firebaseAdmin";
+import { normalizeQuote } from "../../lib/normalizeQuote";
 
 export default async function handler(req, res) {
-  const { id, token } = req.query;
-
-  if (!id || !token) {
-    return res.status(400).json({ error: "Missing quote id or token" });
+  if (req.method !== "GET") {
+    return res.status(405).json({
+      error: "Method not allowed",
+    });
   }
 
   try {
-    const quoteSnap = await getDoc(doc(db, "quotes", id));
-    const linkSnap = await getDoc(doc(db, "quoteLinks", id));
+    const { id, token } = req.query;
 
-    if (!quoteSnap.exists()) {
-      return res.status(404).json({ error: "Quote not found" });
+    if (!id || !token) {
+      return res.status(400).json({
+        error: "Missing quote id or token",
+      });
     }
 
-    if (!linkSnap.exists()) {
-      return res.status(403).json({ error: "Client link not found" });
+    const linkSnap = await adminDb
+      .collection("quoteLinks")
+      .doc(String(id))
+      .get();
+
+    if (!linkSnap.exists) {
+      return res.status(404).json({
+        error: "This estimate is not available.",
+      });
     }
 
-    const link = linkSnap.data();
+    const linkData = linkSnap.data();
 
-    if (link.token !== token) {
-      return res.status(403).json({ error: "Invalid client link" });
+    if (String(linkData.token || "") !== String(token)) {
+      return res.status(403).json({
+        error: "Invalid estimate link.",
+      });
     }
 
-    if (link.expiresAt && Date.now() > Number(link.expiresAt)) {
-      return res.status(403).json({ error: "Client link expired" });
+    if (linkData.expiresAt && Date.now() > Number(linkData.expiresAt)) {
+      return res.status(410).json({
+        error: "This estimate link has expired.",
+      });
     }
 
-    const quote = quoteSnap.data();
+    const quoteId = linkData.quoteId || id;
 
-    return res.status(200).json({
+    const quoteSnap = await adminDb
+      .collection("quotes")
+      .doc(String(quoteId))
+      .get();
+
+    if (!quoteSnap.exists) {
+      return res.status(404).json({
+        error: "Quote not found.",
+      });
+    }
+
+    const quote = normalizeQuote({
       id: quoteSnap.id,
-      ...quote,
-      payload: quote.payload || quote,
+      quoteId: quoteSnap.id,
+      ...quoteSnap.data(),
     });
+
+    return res.status(200).json(quote);
   } catch (err) {
-    console.error("CLIENT QUOTE ERROR:", err);
+    console.error("CLIENT QUOTE API ERROR:", err);
 
     return res.status(500).json({
-      error: err.message || "Client quote failed",
+      error: err.message || "Client quote failed to load",
     });
   }
 }
