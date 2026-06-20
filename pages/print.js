@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import { auth } from "../lib/firebase";
 import { normalizeQuote, formatMoney, formatDate } from "../lib/normalizeQuote";
 
 export default function Print() {
+  const router = useRouter();
   const [quote, setQuote] = useState(null);
   const [sending, setSending] = useState(false);
   const printRef = useRef(null);
@@ -39,12 +41,21 @@ export default function Print() {
       alert("No customer email found.");
       return;
     }
-
+  
+    const currentUser = auth.currentUser;
+  
+    if (!currentUser) {
+      alert("Please sign in before emailing quotes.");
+      return;
+    }
+  
     try {
       setSending(true);
-
+  
+      const token = await currentUser.getIdToken();
+  
       const html2pdf = (await import("html2pdf.js")).default;
-
+  
       const worker = html2pdf()
         .set({
           margin: 0.5,
@@ -55,27 +66,31 @@ export default function Print() {
         })
         .from(printRef.current)
         .toPdf();
-
+  
       const pdfBase64 = await worker.outputPdf("datauristring");
-
+  
       const res = await fetch("/api/send-quote", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           ...quote,
-          contractorEmail: auth?.currentUser?.email || "",
+          userId: currentUser.uid,
+          ownerEmail: currentUser.email || "",
+          createdBy: currentUser.uid,
+          contractorEmail: currentUser.email || "",
           pdfBase64,
         }),
       });
-
+  
       const result = await res.json().catch(() => ({}));
-
+  
       if (!res.ok) {
         throw new Error(result.error || "Email failed");
       }
-
+  
       alert("Quote emailed successfully.");
     } catch (err) {
       console.error("Email PDF error:", err);
@@ -95,7 +110,7 @@ export default function Print() {
         <button onClick={emailPdf} disabled={sending}>
           {sending ? "Sending..." : "Email Quote"}
         </button>
-      </div>
+ 
 
       <button
   type="button"
@@ -103,7 +118,8 @@ export default function Print() {
 >
   Back to Estimate
 </button>
-
+     </div>
+     
       <div ref={printRef} className="print-document">
         <div className="print-header">
           {quote.companySettings?.logo_data && (
