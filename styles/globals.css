@@ -2329,3 +2329,58 @@ body[data-print="true"] aside {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.sidebar-user {
+  margin-top: auto;
+  padding: 16px;
+  overflow: visible;
+}
+
+.sidebar-plan-box {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-plan-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.sidebar-plan-name {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.sidebar-plan-small {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.sidebar-upgrade-btn,
+.sidebar-billing-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.sidebar-upgrade-btn {
+  background: #22c55e;
+  color: #04110a;
+}
+
+.sidebar-billing-btn {
+  background: #334155;
+  color: #ffffff;
+}
