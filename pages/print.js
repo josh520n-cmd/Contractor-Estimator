@@ -97,6 +97,13 @@ export default function Print() {
         </button>
       </div>
 
+      <button
+  type="button"
+  onClick={() => router.push("/estimate")}
+>
+  Back to Estimate
+</button>
+
       <div ref={printRef} className="print-document">
         <div className="print-header">
           {quote.companySettings?.logo_data && (
