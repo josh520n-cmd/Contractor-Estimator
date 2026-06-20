@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
+} from "firebase/auth";
 import { auth } from "../lib/firebase";
 
 export default function Login() {
@@ -8,6 +11,21 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  async function forgotPassword() {
+    if (!email) {
+      alert("Enter your email address first, then click Forgot password.")
+      return
+    }
+  
+    try {
+      await sendPasswordResetEmail(auth, email)
+      alert("Password reset email sent. Check your inbox.")
+    } catch (error) {
+      console.error("Password reset failed:", error)
+      alert(error.message || "Unable to send password reset email.")
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -43,6 +61,13 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
+        <button
+  type="button"
+  className="link-button"
+  onClick={forgotPassword}
+>
+  Forgot password?
+</button>
 
         <button type="submit">Log in</button>
       </form>

@@ -2384,3 +2384,20 @@ body[data-print="true"] aside {
   background: #334155;
   color: #ffffff;
 }
+
+
+
+.link-button {
+  background: transparent;
+  border: 0;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 0;
+  text-align: left;
+  width: fit-content;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
