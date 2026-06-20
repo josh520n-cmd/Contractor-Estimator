@@ -43,8 +43,14 @@ export default async function handler(req, res) {
       });
     }
 
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL || "https://constructionestimator.xyz";
+    let baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://www.constructionestimator.xyz";
+
+if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+  baseUrl = `https://${baseUrl}`;
+}
+
+baseUrl = baseUrl.replace(/\/$/, "");
 
     const userRef = adminDb.collection("users").doc(user.uid);
     const userSnap = await userRef.get();
