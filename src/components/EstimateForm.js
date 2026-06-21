@@ -550,12 +550,35 @@ export default function EstimateForm({ existingQuoteId = null }) {
   
   async function loadTemplates() {
     try {
-      const headers = await getFirebaseHeaders(false)
+      const user = auth.currentUser
   
-      const res = await fetch('/api/templates', { headers })
+      if (!user) {
+        console.warn('No user found while loading templates')
+        return
+      }
+  
+      const token = await user.getIdToken()
+  
+      const res = await fetch('/api/templates', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+  
+      const data = await res.json().catch(() => [])
+  
+      console.log('TEMPLATES LOAD RESPONSE:', res.status, data)
   
       if (res.ok) {
-        setTemplates(await res.json())
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.templates)
+            ? data.templates
+            : []
+  
+        setTemplates(list)
+      } else {
+        console.warn('Failed to load templates:', data.error || res.status)
       }
     } catch (e) {
       console.log('Failed to load templates:', e.message)
@@ -566,25 +589,48 @@ export default function EstimateForm({ existingQuoteId = null }) {
     const name = prompt('Template name')
     if (!name) return
   
-    const payload = {
-      name,
-      data: { items, laborTasks, overheadPct, profitPct, wastePct }
-    }
-  
     try {
-      const headers = await getFirebaseHeaders(true)
+      const user = auth.currentUser
+  
+      if (!user) {
+        alert('Please sign in before saving templates.')
+        return
+      }
+  
+      const token = await user.getIdToken()
+  
+      const payload = {
+        name,
+        userId: user.uid,
+        ownerEmail: user.email || '',
+        data: {
+          items,
+          laborTasks,
+          overheadPct,
+          profitPct,
+          wastePct,
+          taxRate
+        }
+      }
   
       const res = await fetch('/api/templates', {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       })
   
+      const data = await res.json().catch(() => ({}))
+  
+      console.log('TEMPLATE SAVE RESPONSE:', res.status, data)
+  
       if (res.ok) {
         alert('Template saved successfully')
-        loadTemplates()
+        await loadTemplates()
       } else {
-        alert('Failed to save template')
+        alert(data.error || 'Failed to save template')
       }
     } catch (e) {
       console.error('Template save failed:', e)
@@ -594,16 +640,34 @@ export default function EstimateForm({ existingQuoteId = null }) {
   
   async function applyTemplate(id) {
     try {
-      const headers = await getFirebaseHeaders(false)
+      const user = auth.currentUser
   
-      const res = await fetch(`/api/templates/${id}`, { headers })
+      if (!user) {
+        alert('Please sign in before applying templates.')
+        return
+      }
   
-      if (!res.ok) return
+      const token = await user.getIdToken()
   
-      const json = await res.json()
-      const d = json.data || {}
+      const res = await fetch(`/api/templates/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
   
-      setItems(d.items || [])
+      const json = await res.json().catch(() => ({}))
+  
+      console.log('APPLY TEMPLATE RESPONSE:', res.status, json)
+  
+      if (!res.ok) {
+        alert(json.error || 'Failed to apply template')
+        return
+      }
+  
+      const template = json.template || json
+      const d = template.data || {}
+  
+      setItems(Array.isArray(d.items) ? d.items : [])
   
       if (Array.isArray(d.laborTasks) && d.laborTasks.length) {
         setLaborTasks(d.laborTasks)
@@ -613,11 +677,13 @@ export default function EstimateForm({ existingQuoteId = null }) {
         ])
       }
   
-      setOverheadPct(d.overheadPct || 10)
-      setProfitPct(d.profitPct || 10)
-      setWastePct(d.wastePct || 5)
+      setOverheadPct(d.overheadPct ?? 10)
+      setProfitPct(d.profitPct ?? 10)
+      setWastePct(d.wastePct ?? 5)
+      setTaxRate(d.taxRate ?? taxRate)
     } catch (e) {
       console.error('Apply template failed:', e)
+      alert('Failed to apply template')
     }
   }
   
