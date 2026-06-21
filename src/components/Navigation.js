@@ -186,6 +186,11 @@ export default function Navigation() {
           >
             Company Settings
           </Link>
+
+          <Link href="/feedback" className="nav-link">
+  Request Feature / Report Bug
+</Link>
+
         </nav>
 
         <div className="sidebar-user">
