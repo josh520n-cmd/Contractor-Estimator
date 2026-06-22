@@ -165,17 +165,86 @@ export default function EstimateForm({ existingQuoteId = null }) {
         }
   }
 
+  async function getPresetAuthHeaders(includeJson = false) {
+    const user = auth.currentUser
+  
+    if (!user) {
+      throw new Error('You must be signed in to use material presets.')
+    }
+  
+    const token = await user.getIdToken()
+  
+    const headers = {
+      Authorization: `Bearer ${token}`
+    }
+  
+    if (includeJson) {
+      headers['Content-Type'] = 'application/json'
+    }
+  
+    return headers
+  }
+  
   async function loadMaterialPresets() {
     try {
-      const headers = await getFirebaseHeaders(false)
+      const headers = await getPresetAuthHeaders(false)
   
-      const res = await fetch('/api/presets/materials', { headers })
+      const res = await fetch('/api/presets/materials', {
+        headers
+      })
   
-      if (res.ok) {
-        setMaterialPresets(await res.json())
+      const data = await res.json().catch(() => [])
+  
+      if (!res.ok) {
+        console.warn('Failed to load material presets:', data.error || res.status)
+        setMaterialPresets([])
+        return
       }
+  
+      setMaterialPresets(Array.isArray(data) ? data : [])
     } catch (e) {
       console.log('Failed to load material presets:', e.message)
+      setMaterialPresets([])
+    }
+  }
+  
+  async function saveMaterialPreset() {
+    if (!newPresetName.trim()) {
+      return alert('Enter preset name')
+    }
+  
+    const payload = {
+      name: newPresetName.trim(),
+      description: newPresetDesc || '',
+      qty: Number(newPresetQty) || 0,
+      unit_price: Number(newPresetPrice) || 0
+    }
+  
+    try {
+      const headers = await getPresetAuthHeaders(true)
+  
+      const res = await fetch('/api/presets/materials', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      })
+  
+      const data = await res.json().catch(() => ({}))
+  
+      if (!res.ok) {
+        alert(data.error || 'Failed to save preset.')
+        return
+      }
+  
+      setNewPresetName('')
+      setNewPresetDesc('')
+      setNewPresetQty(1)
+      setNewPresetPrice(0)
+  
+      await loadMaterialPresets()
+    } catch (e) {
+      console.error('Preset save failed:', e)
+      alert(e.message || 'Failed to save preset.')
     }
   }
 
@@ -213,39 +282,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
     }
   }
 
-  async function saveMaterialPreset() {
-    if (!newPresetName) return alert('Enter preset name')
-  
-    const payload = {
-      name: newPresetName,
-      description: newPresetDesc,
-      qty: Number(newPresetQty),
-      unit_price: Number(newPresetPrice)
-    }
-  
-    try {
-      const headers = await getFirebaseHeaders(true)
-  
-      const res = await fetch('/api/presets/materials', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload)
-      })
-  
-      if (res.ok) {
-        setNewPresetName('')
-        setNewPresetDesc('')
-        setNewPresetQty(1)
-        setNewPresetPrice(0)
-        loadMaterialPresets()
-      } else {
-        alert('Failed to save preset')
-      }
-    } catch (e) {
-      console.error('Preset save failed:', e)
-      alert('Preset save failed')
-    }
-  }
+ 
 
   async function addPresetToItems(preset) {
     setItems([...items, {
