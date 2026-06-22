@@ -749,6 +749,100 @@ export default function EstimateForm({ existingQuoteId = null }) {
       alert('Template save failed')
     }
   }
+
+  async function updateTemplate(template) {
+    const name = prompt("Template name", template.name || "Template");
+  
+    if (!name) return;
+  
+    const ok = confirm(
+      "Update this template using the current materials, labor, and percentage settings?"
+    );
+  
+    if (!ok) return;
+  
+    try {
+      const user = auth.currentUser;
+  
+      if (!user) {
+        alert("Please sign in before editing templates.");
+        return;
+      }
+  
+      const token = await user.getIdToken();
+  
+      const payload = {
+        name,
+        data: {
+          items,
+          laborTasks,
+          overheadPct,
+          profitPct,
+          wastePct,
+          taxRate,
+        },
+      };
+  
+      const res = await fetch(`/api/templates/${template.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      const data = await res.json().catch(() => ({}));
+  
+      if (!res.ok) {
+        alert(data.error || "Failed to update template.");
+        return;
+      }
+  
+      alert("Template updated successfully");
+      await loadTemplates();
+    } catch (e) {
+      console.error("Template update failed:", e);
+      alert("Template update failed");
+    }
+  }
+  
+  async function deleteTemplate(template) {
+    const ok = confirm(`Delete template "${template.name}"?`);
+  
+    if (!ok) return;
+  
+    try {
+      const user = auth.currentUser;
+  
+      if (!user) {
+        alert("Please sign in before deleting templates.");
+        return;
+      }
+  
+      const token = await user.getIdToken();
+  
+      const res = await fetch(`/api/templates/${template.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = await res.json().catch(() => ({}));
+  
+      if (!res.ok) {
+        alert(data.error || "Failed to delete template.");
+        return;
+      }
+  
+      alert("Template deleted");
+      await loadTemplates();
+    } catch (e) {
+      console.error("Template delete failed:", e);
+      alert("Template delete failed");
+    }
+  }
   
   async function applyTemplate(id) {
     try {
@@ -943,20 +1037,60 @@ export default function EstimateForm({ existingQuoteId = null }) {
           </section>
 
           <section className="card section-panel">
-            <div className="section-header">
-              <h2>Estimate Templates</h2>
-            </div>
-            <div className="template-actions">
-              <button type="button" className="secondary" onClick={saveTemplate}>Save as Template</button>
-              <button type="button" className="secondary" onClick={loadTemplates}>Refresh Templates</button>
-            </div>
-            {templates.length > 0 && (
-              <select onChange={e => { if (e.target.value) applyTemplate(e.target.value); e.target.value = '' }}>
-                <option value="">Apply template...</option>
-                {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-            )}
-          </section>
+  <div className="section-header">
+    <h2>Estimate Templates</h2>
+  </div>
+
+  <div className="template-actions">
+    <button type="button" className="secondary" onClick={saveTemplate}>
+      Save as Template
+    </button>
+
+    <button type="button" className="secondary" onClick={loadTemplates}>
+      Refresh Templates
+    </button>
+  </div>
+
+  {templates.length > 0 && (
+    <div className="template-list">
+      {templates.map((template) => (
+        <div key={template.id} className="template-item">
+          <span>{template.name}</span>
+
+          <div className="template-actions-row">
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => applyTemplate(template.id)}
+            >
+              Apply
+            </button>
+
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => updateTemplate(template)}
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              className="secondary danger"
+              onClick={() => deleteTemplate(template)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {templates.length === 0 && (
+    <p className="muted-text">No templates saved yet.</p>
+  )}
+</section>
         </aside>
       </div>
 

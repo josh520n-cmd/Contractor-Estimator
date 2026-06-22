@@ -1,11 +1,5 @@
 import { adminAuth, adminDb } from "../../../lib/firebaseAdmin";
 
-const OWNER_EMAIL = String(
-  process.env.OWNER_EMAIL ||
-    process.env.NEXT_PUBLIC_OWNER_EMAIL ||
-    "josh520n@gmail.com"
-).toLowerCase();
-
 async function getUserFromRequest(req) {
   const header = req.headers.authorization || "";
 
@@ -22,80 +16,70 @@ async function getUserFromRequest(req) {
   return await adminAuth.verifyIdToken(token);
 }
 
-function isOwnerEmail(email) {
-  return String(email || "").toLowerCase() === OWNER_EMAIL;
-}
-
-function canAccessTemplate(user, templateData) {
-  if (!user) return false;
-  if (isOwnerEmail(user.email)) return true;
-  return templateData.userId === user.uid;
-}
-
 export default async function handler(req, res) {
   try {
-    const user = await getUserFromRequest(req).catch(() => null);
+    const user = await getUserFromRequest(req);
 
     if (!user) {
-      return res.status(401).json({
-        error: "You must be signed in to use templates.",
-      });
+      return res.status(401).json({ error: "You must be signed in." });
     }
 
     const { id } = req.query;
 
     if (!id) {
-      return res.status(400).json({
-        error: "Missing template id.",
-      });
+      return res.status(400).json({ error: "Missing template id." });
     }
 
-    const ref = adminDb.collection("templates").doc(String(id));
-    const snap = await ref.get();
+    const docRef = adminDb.collection("templates").doc(id);
+    const docSnap = await docRef.get();
 
-    if (!snap.exists) {
-      return res.status(404).json({
-        error: "Template not found.",
-      });
+    if (!docSnap.exists) {
+      return res.status(404).json({ error: "Template not found." });
     }
 
-    const data = snap.data() || {};
+    const existing = docSnap.data();
 
-    if (!canAccessTemplate(user, data)) {
-      return res.status(403).json({
-        error: "You do not have access to this template.",
-      });
+    if (existing.userId !== user.uid) {
+      return res.status(403).json({ error: "Not allowed." });
     }
 
     if (req.method === "GET") {
       return res.status(200).json({
-        id: snap.id,
-        name: data.name || "Untitled Template",
-        userId: data.userId || "",
-        ownerEmail: data.ownerEmail || "",
-        data: data.data || {},
-        createdAt: data.createdAt || "",
-        updatedAt: data.updatedAt || "",
+        id: docSnap.id,
+        ...existing,
+      });
+    }
+
+    if (req.method === "PUT") {
+      const payload = req.body || {};
+
+      const update = {
+        name: String(payload.name || existing.name || "Template").trim(),
+        data: payload.data || existing.data || {},
+        updatedAt: new Date().toISOString(),
+      };
+
+      await docRef.set(update, { merge: true });
+
+      return res.status(200).json({
+        id,
+        ...existing,
+        ...update,
       });
     }
 
     if (req.method === "DELETE") {
-      await ref.delete();
+      await docRef.delete();
 
-      return res.status(200).json({
-        ok: true,
-        id: snap.id,
-      });
+      return res.status(200).json({ success: true });
     }
 
-    return res.status(405).json({
-      error: "Method not allowed",
-    });
+    return res.status(405).json({ error: "Method not allowed." });
   } catch (err) {
-    console.error("TEMPLATE DETAIL API ERROR:", err);
+    console.error("TEMPLATE ID API ERROR:", err);
 
     return res.status(500).json({
-      error: err.message || "Template API failed",
+      error: err.message || "Template request failed.",
     });
   }
 }
