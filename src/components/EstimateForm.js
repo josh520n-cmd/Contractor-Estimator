@@ -50,6 +50,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
   const [newPresetDesc, setNewPresetDesc] = useState('')
   const [newPresetQty, setNewPresetQty] = useState(1)
   const [newPresetPrice, setNewPresetPrice] = useState(0)
+  const [editingPresetId, setEditingPresetId] = useState(null)
 
   // Company settings
   const [companySettings, setCompanySettings] = useState({
@@ -214,9 +215,10 @@ export default function EstimateForm({ existingQuoteId = null }) {
     }
   
     const payload = {
+      id: editingPresetId,
       name: newPresetName.trim(),
       description: newPresetDesc || '',
-      qty: Number(newPresetQty) || 0,
+      qty: Number(newPresetQty) || 1,
       unit_price: Number(newPresetPrice) || 0
     }
   
@@ -224,7 +226,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
       const headers = await getPresetAuthHeaders(true)
   
       const res = await fetch('/api/presets/materials', {
-        method: 'POST',
+        method: editingPresetId ? 'PUT' : 'POST',
         headers,
         body: JSON.stringify(payload)
       })
@@ -236,11 +238,7 @@ export default function EstimateForm({ existingQuoteId = null }) {
         return
       }
   
-      setNewPresetName('')
-      setNewPresetDesc('')
-      setNewPresetQty(1)
-      setNewPresetPrice(0)
-  
+      clearMaterialPresetForm()
       await loadMaterialPresets()
     } catch (e) {
       console.error('Preset save failed:', e)
@@ -284,12 +282,91 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
  
 
-  async function addPresetToItems(preset) {
-    setItems([...items, {
-      desc: preset.name + (preset.description ? ' - ' + preset.description : ''),
-      qty: preset.qty,
-      unit: preset.unit_price
-    }])
+  function editMaterialPreset(preset) {
+    setEditingPresetId(preset.id)
+    setNewPresetName(preset.name || '')
+    setNewPresetDesc(preset.description || '')
+    setNewPresetQty(Number(preset.qty) || 1)
+    setNewPresetPrice(Number(preset.unit_price) || 0)
+  }
+  
+  function clearMaterialPresetForm() {
+    setEditingPresetId(null)
+    setNewPresetName('')
+    setNewPresetDesc('')
+    setNewPresetQty(1)
+    setNewPresetPrice(0)
+  }
+  
+  async function deleteMaterialPreset(preset) {
+    const ok = confirm(`Delete preset "${preset.name}"?`)
+  
+    if (!ok) return
+  
+    try {
+      const headers = await getPresetAuthHeaders(false)
+  
+      const res = await fetch(
+        `/api/presets/materials?id=${encodeURIComponent(preset.id)}`,
+        {
+          method: 'DELETE',
+          headers
+        }
+      )
+  
+      const data = await res.json().catch(() => ({}))
+  
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete preset.')
+        return
+      }
+  
+      if (editingPresetId === preset.id) {
+        clearMaterialPresetForm()
+      }
+  
+      await loadMaterialPresets()
+    } catch (e) {
+      console.error('Preset delete failed:', e)
+      alert(e.message || 'Failed to delete preset.')
+    }
+  }
+  
+  function addPresetToItems(preset) {
+    const presetDesc =
+      preset.name + (preset.description ? ' - ' + preset.description : '')
+  
+    const presetQty = Number(preset.qty) || 1
+    const presetUnit = Number(preset.unit_price) || 0
+  
+    setItems((prevItems) => {
+      const existingIndex = prevItems.findIndex(
+        (item) =>
+          String(item.desc || '').trim().toLowerCase() ===
+            presetDesc.trim().toLowerCase() &&
+          Number(item.unit) === presetUnit
+      )
+  
+      if (existingIndex === -1) {
+        return [
+          ...prevItems,
+          {
+            desc: presetDesc,
+            qty: presetQty,
+            unit: presetUnit
+          }
+        ]
+      }
+  
+      return prevItems.map((item, index) => {
+        if (index !== existingIndex) return item
+  
+        return {
+          ...item,
+          qty: Number(item.qty || 0) + presetQty
+        }
+      })
+    })
   }
 
   async function saveCompanySettings() {
@@ -887,29 +964,98 @@ export default function EstimateForm({ existingQuoteId = null }) {
 
 
       <details className="collapsible-card">
-        <summary>Material Presets</summary>
-        <div className="collapsible-body">
-          <section className="material-presets">
-            <div className="preset-form">
-              <input placeholder="Preset name" value={newPresetName} onChange={e => setNewPresetName(e.target.value)} />
-              <input placeholder="Description" value={newPresetDesc} onChange={e => setNewPresetDesc(e.target.value)} />
-              <input type="number" placeholder="Qty" value={newPresetQty} onChange={e => setNewPresetQty(e.target.value)} />
-              <input type="number" placeholder="Unit price" value={newPresetPrice} onChange={e => setNewPresetPrice(e.target.value)} />
-              <button type="button" className="secondary" onClick={saveMaterialPreset}>Add Preset</button>
-            </div>
-            {materialPresets.length > 0 && (
-              <div className="preset-list">
-                {materialPresets.map(p => (
-                  <div key={p.id} className="preset-item">
-                    <span>{p.name} - {p.qty} x ${Number(p.unit_price).toFixed(2)}</span>
-                    <button type="button" className="secondary" onClick={() => addPresetToItems(p)}>+ Add</button>
-                  </div>
-                ))}
+  <summary>Material Presets</summary>
+
+  <div className="collapsible-body">
+    <section className="material-presets">
+      <div className="preset-form">
+        <input
+          placeholder="Preset name"
+          value={newPresetName}
+          onChange={e => setNewPresetName(e.target.value)}
+        />
+
+        <input
+          placeholder="Description"
+          value={newPresetDesc}
+          onChange={e => setNewPresetDesc(e.target.value)}
+        />
+
+        <input
+          type="number"
+          placeholder="Qty"
+          value={newPresetQty}
+          onChange={e => setNewPresetQty(e.target.value)}
+        />
+
+        <input
+          type="number"
+          placeholder="Unit price"
+          value={newPresetPrice}
+          onChange={e => setNewPresetPrice(e.target.value)}
+        />
+
+        <button
+          type="button"
+          className="secondary"
+          onClick={saveMaterialPreset}
+        >
+          {editingPresetId ? 'Update Preset' : 'Add Preset'}
+        </button>
+
+        {editingPresetId && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={clearMaterialPresetForm}
+          >
+            Cancel Edit
+          </button>
+        )}
+      </div>
+
+      {materialPresets.length > 0 && (
+        <div className="preset-list">
+          {materialPresets.map(p => (
+            <div key={p.id} className="preset-item">
+              <span>
+                {p.name}
+                {p.description ? ` - ${p.description}` : ''} — {p.qty} x $
+                {Number(p.unit_price || 0).toFixed(2)}
+              </span>
+
+              <div className="preset-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => addPresetToItems(p)}
+                >
+                  + Add
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => editMaterialPreset(p)}
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary danger"
+                  onClick={() => deleteMaterialPreset(p)}
+                >
+                  Delete
+                </button>
               </div>
-            )}
-          </section>
+            </div>
+          ))}
         </div>
-      </details>
+      )}
+    </section>
+  </div>
+</details>
 
       {usageStatus && !usageStatus.unlimited && (
   <div className="usage-banner">

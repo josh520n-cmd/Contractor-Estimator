@@ -1,49 +1,131 @@
-import { v4 as uuidv4 } from 'uuid'
-import db from '../../../lib/db'
-const { verifyAuth } = require('../../../lib/auth')
+import { adminAuth, adminDb } from "../../../lib/firebaseAdmin";
+
+async function getUserFromRequest(req) {
+  const header = req.headers.authorization || "";
+
+  if (!header.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = header.replace("Bearer ", "").trim();
+  if (!token) return null;
+
+  return await adminAuth.verifyIdToken(token);
+}
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    try {
-      const auth = await verifyAuth(req)
-      const user_id = auth ? auth.sub : null
-      
-      const rows = user_id
-        ? db.prepare('SELECT id, name, description, qty, unit_price, created_at FROM material_presets WHERE user_id = ? ORDER BY created_at DESC').all(user_id)
-        : db.prepare('SELECT id, name, description, qty, unit_price, created_at FROM material_presets ORDER BY created_at DESC').all()
-      
-      return res.json(rows || [])
-    } catch (e) {
-      // Fall back to localStorage
-      const storage = require('../../../lib/storage')
-      const auth = await verifyAuth(req)
-      const user_id = auth ? auth.sub : null
-      const presets = user_id ? storage.getUserMaterialPresets(user_id) : storage.getAllMaterialPresets()
-      return res.json(presets || [])
+  try {
+    const user = await getUserFromRequest(req);
+
+    if (!user) {
+      return res.status(401).json({ error: "You must be signed in." });
     }
-  }
 
-  if (req.method === 'POST') {
-    const payload = req.body || {}
-    const id = uuidv4()
-    const now = new Date().toISOString()
-    const auth = await verifyAuth(req)
-    const user_id = auth ? auth.sub : null
-    const name = payload.name || 'Material'
-    const description = payload.description || ''
-    const qty = payload.qty || 0
-    const unit_price = payload.unit_price || 0
+    const collectionRef = adminDb.collection("materialPresets");
 
-    try {
-      db.prepare('INSERT INTO material_presets (id,user_id,name,description,qty,unit_price,created_at) VALUES (?,?,?,?,?,?,?)').run(id, user_id, name, description, qty, unit_price, now)
-      return res.status(201).json({ id })
-    } catch (e) {
-      // Fall back to localStorage
-      const storage = require('../../../lib/storage')
-      storage.createMaterialPreset(id, user_id, name, description, qty, unit_price, now)
-      return res.status(201).json({ id })
+    if (req.method === "GET") {
+      const snap = await collectionRef
+        .where("userId", "==", user.uid)
+        .orderBy("createdAt", "desc")
+        .get();
+
+      const presets = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return res.status(200).json(presets);
     }
-  }
 
-  res.status(405).end()
+    if (req.method === "POST") {
+      const payload = req.body || {};
+
+      const preset = {
+        userId: user.uid,
+        name: String(payload.name || "Material").trim(),
+        description: String(payload.description || "").trim(),
+        qty: Number(payload.qty) || 1,
+        unit_price: Number(payload.unit_price) || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const docRef = await collectionRef.add(preset);
+
+      return res.status(201).json({
+        id: docRef.id,
+        ...preset,
+      });
+    }
+
+    if (req.method === "PUT") {
+      const payload = req.body || {};
+      const id = payload.id;
+
+      if (!id) {
+        return res.status(400).json({ error: "Missing preset id." });
+      }
+
+      const docRef = collectionRef.doc(id);
+      const docSnap = await docRef.get();
+
+      if (!docSnap.exists) {
+        return res.status(404).json({ error: "Preset not found." });
+      }
+
+      const existing = docSnap.data();
+
+      if (existing.userId !== user.uid) {
+        return res.status(403).json({ error: "Not allowed." });
+      }
+
+      const update = {
+        name: String(payload.name || "Material").trim(),
+        description: String(payload.description || "").trim(),
+        qty: Number(payload.qty) || 1,
+        unit_price: Number(payload.unit_price) || 0,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await docRef.set(update, { merge: true });
+
+      return res.status(200).json({
+        id,
+        ...existing,
+        ...update,
+      });
+    }
+
+    if (req.method === "DELETE") {
+      const id = req.query.id || req.body?.id;
+
+      if (!id) {
+        return res.status(400).json({ error: "Missing preset id." });
+      }
+
+      const docRef = collectionRef.doc(id);
+      const docSnap = await docRef.get();
+
+      if (!docSnap.exists) {
+        return res.status(404).json({ error: "Preset not found." });
+      }
+
+      const existing = docSnap.data();
+
+      if (existing.userId !== user.uid) {
+        return res.status(403).json({ error: "Not allowed." });
+      }
+
+      await docRef.delete();
+
+      return res.status(200).json({ success: true });
+    }
+
+    return res.status(405).json({ error: "Method not allowed." });
+  } catch (err) {
+    console.error("MATERIAL PRESETS API ERROR:", err);
+    return res.status(500).json({
+      error: err.message || "Material preset request failed.",
+    });
+  }
 }
