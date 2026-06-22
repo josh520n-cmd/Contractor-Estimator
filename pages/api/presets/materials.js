@@ -8,7 +8,10 @@ async function getUserFromRequest(req) {
   }
 
   const token = header.replace("Bearer ", "").trim();
-  if (!token) return null;
+
+  if (!token) {
+    return null;
+  }
 
   return await adminAuth.verifyIdToken(token);
 }
@@ -26,13 +29,18 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       const snap = await collectionRef
         .where("userId", "==", user.uid)
-        .orderBy("createdAt", "desc")
         .get();
 
-      const presets = snap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const presets = snap.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .sort((a, b) => {
+          const aTime = new Date(a.createdAt || 0).getTime();
+          const bTime = new Date(b.createdAt || 0).getTime();
+          return bTime - aTime;
+        });
 
       return res.status(200).json(presets);
     }
@@ -42,6 +50,7 @@ export default async function handler(req, res) {
 
       const preset = {
         userId: user.uid,
+        ownerEmail: user.email || "",
         name: String(payload.name || "Material").trim(),
         description: String(payload.description || "").trim(),
         qty: Number(payload.qty) || 1,
@@ -124,6 +133,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed." });
   } catch (err) {
     console.error("MATERIAL PRESETS API ERROR:", err);
+
     return res.status(500).json({
       error: err.message || "Material preset request failed.",
     });

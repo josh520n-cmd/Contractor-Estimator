@@ -198,14 +198,12 @@ export default function EstimateForm({ existingQuoteId = null }) {
   
       if (!res.ok) {
         console.warn('Failed to load material presets:', data.error || res.status)
-        setMaterialPresets([])
         return
       }
   
       setMaterialPresets(Array.isArray(data) ? data : [])
     } catch (e) {
       console.log('Failed to load material presets:', e.message)
-      setMaterialPresets([])
     }
   }
   
