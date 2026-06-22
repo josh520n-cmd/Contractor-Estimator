@@ -24,6 +24,19 @@ export default function Navigation() {
 
     return () => unsubscribe();
   }, []);
+  useEffect(() => {
+    async function refreshUsage() {
+      if (auth.currentUser) {
+        await loadUsageStatus(auth.currentUser);
+      }
+    }
+  
+    window.addEventListener("usage-updated", refreshUsage);
+  
+    return () => {
+      window.removeEventListener("usage-updated", refreshUsage);
+    };
+  }, []);
 
   const isAuthPage =
     router.pathname === "/" ||
