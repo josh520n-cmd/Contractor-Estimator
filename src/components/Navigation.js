@@ -38,15 +38,28 @@ export default function Navigation() {
     };
   }, []);
 
+  const seoSlugs = [
+    "/contractor-estimate-software",
+    "/handyman-estimate-software",
+    "/painting-estimate-software",
+    "/landscaping-estimate-software",
+    "/remodeling-estimate-software",
+    "/construction-estimate-template",
+  ];
+  
+  const currentPath = router.asPath.split("?")[0];
+  
   const isAuthPage =
     router.pathname === "/" ||
     router.pathname === "/login" ||
     router.pathname === "/signup";
-
+  
+  const isSeoPage = seoSlugs.includes(currentPath);
   const isClientView = router.pathname.startsWith("/quotes/client");
-  const isPrintView = router.pathname === "/print";
-  const shouldHideSidebar = isAuthPage || isClientView || isPrintView;
-
+  const isPrintView = router.pathname === "/print" || router.pathname.includes("/print");
+  
+  const shouldHideSidebar =
+    isAuthPage || isSeoPage || isClientView || isPrintView;
   async function loadUsageStatus(firebaseUser) {
     if (!firebaseUser) {
       setUsageStatus(null);
