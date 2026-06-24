@@ -2601,15 +2601,15 @@ body[data-print="true"] aside {
   margin-top: 12px;
 }
 
-/* SEO LANDING PAGES */
+/* SEO LANDING PAGES - DARK HOME STYLE */
 
 .seo-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 34%),
-    radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 30%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-  color: #0f172a;
+    radial-gradient(circle at top, rgba(34, 197, 94, 0.14), transparent 32%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 28%),
+    #020617;
+  color: #ffffff;
   padding: 72px 24px;
 }
 
@@ -2618,29 +2618,18 @@ body[data-print="true"] aside {
 .seo-cta {
   max-width: 1120px;
   margin: 0 auto 32px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 28px;
-  padding: 52px;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.12);
-  backdrop-filter: blur(14px);
+  padding: 56px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
 }
 
 .seo-hero {
-  position: relative;
-  overflow: hidden;
-}
-
-.seo-hero::after {
-  content: "";
-  position: absolute;
-  width: 280px;
-  height: 280px;
-  border-radius: 999px;
-  right: -90px;
-  top: -90px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.16), transparent 70%);
-  pointer-events: none;
+  text-align: center;
+  background:
+    radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 36%),
+    rgba(2, 6, 23, 0.92);
 }
 
 .seo-badge {
@@ -2648,49 +2637,84 @@ body[data-print="true"] aside {
   align-items: center;
   padding: 9px 15px;
   border-radius: 999px;
-  background: #dcfce7;
-  color: #15803d;
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
   font-weight: 800;
   font-size: 0.85rem;
-  margin-bottom: 20px;
-  border: 1px solid #bbf7d0;
+  margin-bottom: 22px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
 .seo-hero h1 {
-  max-width: 850px;
-  font-size: clamp(2.3rem, 5.8vw, 4.8rem);
+  max-width: 900px;
+  margin: 0 auto 24px;
+  font-size: clamp(2.5rem, 6vw, 5rem);
   line-height: 0.98;
   letter-spacing: -0.06em;
-  margin: 0 0 22px;
-  color: #020617;
+  color: #ffffff;
 }
 
 .seo-subtitle {
-  max-width: 780px;
-  font-size: 1.18rem;
-  color: #475569;
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 1.12rem;
+  color: #cbd5e1;
   line-height: 1.75;
-  margin: 0;
 }
 
 .seo-actions {
   display: flex;
+  justify-content: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-top: 30px;
+  margin-top: 32px;
+}
+
+.seo-primary-btn,
+.seo-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 12px;
+  font-weight: 900;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.seo-primary-btn {
+  background: #22c55e;
+  color: #020617;
+  box-shadow: 0 16px 34px rgba(34, 197, 94, 0.25);
+}
+
+.seo-secondary-btn {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.65);
+}
+
+.seo-primary-btn:hover,
+.seo-secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.seo-secondary-btn:hover {
+  border-color: #22c55e;
 }
 
 .seo-section h2,
 .seo-cta h2 {
-  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
   letter-spacing: -0.04em;
-  margin: 0 0 16px;
-  color: #020617;
+  margin: 0 0 18px;
+  color: #ffffff;
 }
 
 .seo-section > p,
 .seo-cta p {
-  color: #475569;
+  color: #cbd5e1;
   line-height: 1.75;
   font-size: 1.05rem;
   margin-bottom: 0;
@@ -2700,26 +2724,26 @@ body[data-print="true"] aside {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
-  margin-top: 32px;
+  margin-top: 34px;
 }
 
 .seo-feature-grid div {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e2e8f0;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 18px;
-  padding: 24px;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  padding: 26px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
 }
 
 .seo-feature-grid h3 {
-  margin: 0 0 9px;
-  color: #0f172a;
+  margin: 0 0 10px;
+  color: #4ade80;
   font-size: 1.05rem;
 }
 
 .seo-feature-grid p {
   margin: 0;
-  color: #64748b;
+  color: #cbd5e1;
   line-height: 1.65;
   font-size: 0.95rem;
 }
@@ -2727,13 +2751,13 @@ body[data-print="true"] aside {
 .seo-cta {
   text-align: center;
   background:
-    radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 42%),
-    #ffffff;
+    radial-gradient(circle at top, rgba(34, 197, 94, 0.14), transparent 40%),
+    rgba(15, 23, 42, 0.94);
 }
 
 .seo-cta p {
   max-width: 680px;
-  margin: 0 auto 26px;
+  margin: 0 auto 28px;
 }
 
 @media (max-width: 850px) {
@@ -2748,7 +2772,7 @@ body[data-print="true"] aside {
   .seo-hero,
   .seo-section,
   .seo-cta {
-    padding: 30px;
+    padding: 32px;
     border-radius: 22px;
   }
 
@@ -2756,9 +2780,66 @@ body[data-print="true"] aside {
     flex-direction: column;
   }
 
-  .seo-actions a,
-  .seo-cta a {
+  .seo-primary-btn,
+  .seo-secondary-btn {
     width: 100%;
-    text-align: center;
+  }
+}
+
+.seo-topbar {
+  max-width: 1120px;
+  margin: 0 auto 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.seo-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 1.25rem;
+}
+
+.seo-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.seo-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seo-nav-btn {
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.seo-small-note {
+  margin-top: 18px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .seo-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 34px;
+  }
+
+  .seo-nav {
+    width: 100%;
+  }
+
+  .seo-nav a {
+    flex: 1;
   }
 }

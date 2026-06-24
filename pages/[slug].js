@@ -11,6 +11,7 @@ const SEO_PAGES = {
     keywords:
       "contractor estimate software, contractor estimating app, construction estimate software, contractor quote software",
   },
+
   "handyman-estimate-software": {
     title: "Handyman Estimate Software",
     audience: "handymen",
@@ -20,6 +21,7 @@ const SEO_PAGES = {
     keywords:
       "handyman estimate software, handyman estimating app, handyman quote software, handyman invoice estimate tool",
   },
+
   "painting-estimate-software": {
     title: "Painting Estimate Software",
     audience: "painters",
@@ -29,6 +31,7 @@ const SEO_PAGES = {
     keywords:
       "painting estimate software, painter estimating app, painting quote software, paint job estimate tool",
   },
+
   "landscaping-estimate-software": {
     title: "Landscaping Estimate Software",
     audience: "landscapers",
@@ -38,6 +41,7 @@ const SEO_PAGES = {
     keywords:
       "landscaping estimate software, landscaping estimating app, landscaping quote software, lawn care estimate tool",
   },
+
   "remodeling-estimate-software": {
     title: "Remodeling Estimate Software",
     audience: "remodelers",
@@ -47,6 +51,7 @@ const SEO_PAGES = {
     keywords:
       "remodeling estimate software, remodeler estimating app, home remodeling quote software, renovation estimate tool",
   },
+
   "construction-estimate-template": {
     title: "Construction Estimate Template",
     audience: "small crews",
@@ -62,6 +67,7 @@ export default function SeoLandingPage({ page }) {
   if (!page) return null;
 
   const fullTitle = `${page.title} | Construction Estimator`;
+  const canonicalUrl = `https://constructionestimator.xyz/${page.slug}`;
 
   return (
     <>
@@ -69,12 +75,41 @@ export default function SeoLandingPage({ page }) {
         <title>{fullTitle}</title>
         <meta name="description" content={page.description} />
         <meta name="keywords" content={page.keywords} />
+
+        <link rel="canonical" href={canonicalUrl} />
+
         <meta property="og:title" content={fullTitle} />
         <meta property="og:description" content={page.description} />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalUrl} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={page.description} />
       </Head>
 
       <main className="seo-page">
+        <header className="seo-topbar">
+          <Link href="/" className="seo-brand">
+            <img
+              src="/cee-logo.png"
+              alt="Construction Estimator"
+              className="seo-logo"
+            />
+            <span>Contractor Estimator</span>
+          </Link>
+
+          <nav className="seo-nav">
+            <Link href="/login" className="seo-secondary-btn seo-nav-btn">
+              Sign In
+            </Link>
+
+            <Link href="/signup" className="seo-primary-btn seo-nav-btn">
+              Start Free
+            </Link>
+          </nav>
+        </header>
+
         <section className="seo-hero">
           <div className="seo-badge">Construction Estimator</div>
 
@@ -83,14 +118,19 @@ export default function SeoLandingPage({ page }) {
           <p className="seo-subtitle">{page.description}</p>
 
           <div className="seo-actions">
-            <Link href="/signup" className="btn-save">
+            <Link href="/signup" className="seo-primary-btn">
               Start Free — 5 Estimates Included
             </Link>
 
-            <Link href="/" className="btn-print">
+            <Link href="/" className="seo-secondary-btn">
               See How It Works
             </Link>
           </div>
+
+          <p className="seo-small-note">
+            No credit card required. Upgrade to Pro when you are ready for
+            unlimited estimates.
+          </p>
         </section>
 
         <section className="seo-section">
@@ -129,7 +169,8 @@ export default function SeoLandingPage({ page }) {
             <div>
               <h3>Print PDFs and send links</h3>
               <p>
-                Give customers a cleaner, more professional estimate.
+                Give customers a cleaner, more professional estimate they can
+                review.
               </p>
             </div>
 
@@ -152,12 +193,13 @@ export default function SeoLandingPage({ page }) {
 
         <section className="seo-cta">
           <h2>Try Construction Estimator today</h2>
+
           <p>
             Create cleaner estimates, stay organized, and stop doing everything
             the hard way.
           </p>
 
-          <Link href="/signup" className="btn-save">
+          <Link href="/signup" className="seo-primary-btn">
             Start Free
           </Link>
         </section>
@@ -180,7 +222,10 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      page,
+      page: {
+        ...page,
+        slug: params.slug,
+      },
     },
   };
 }
