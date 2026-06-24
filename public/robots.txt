@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://constructionestimator.xyz/sitemap.xml
+Sitemap: https://www.constructionestimator.xyz/sitemap.xml

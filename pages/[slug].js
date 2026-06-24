@@ -67,7 +67,7 @@ export default function SeoLandingPage({ page }) {
   if (!page) return null;
 
   const fullTitle = `${page.title} | Construction Estimator`;
-  const canonicalUrl = `https://constructionestimator.xyz/${page.slug}`;
+  const canonicalUrl = `https://www.constructionestimator.xyz/${page.slug}`;
 
   return (
     <>
